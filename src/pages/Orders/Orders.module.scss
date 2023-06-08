@@ -1,0 +1,46 @@
+.removeOrdersBtn {
+	min-width: 230px;
+	height: 30px;
+	border: none;
+	border-radius: 10px;
+	background: #f0c03c;
+	color: rgb(255, 255, 255);
+	transition: background 0.2s ease-in-out;
+
+	&:hover {
+		background: lighten($color: #f0c03c, $amount: 5%)
+	}
+
+	&:active {
+		background: darken($color: #f0c03c, $amount: 5%)
+	}
+
+
+	b {
+		font-size: 20px;
+	}
+}
+
+.submitBtn {
+	min-width: 230px;
+	height: 30px;
+	margin-top: 20px !important;
+	border: none;
+	border-radius: 10px;
+	background: #9dd558;
+	color: rgb(255, 255, 255);
+	transition: background 0.2s ease-in-out;
+
+	&:hover {
+		background: lighten($color: #9dd558, $amount: 5%)
+	}
+
+	&:active {
+		background: darken($color: #9dd558, $amount: 5%)
+	}
+
+
+	b {
+		font-size: 25px;
+	}
+}
