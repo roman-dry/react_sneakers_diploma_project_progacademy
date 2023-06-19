@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AppContext } from '../App';
 
-function Header( {onClickCart} ) {
+function Header( {onClickCart, userViewName} ) {
 
 	const { cardCart } = useContext(AppContext);
    const sumOfOrders = cardCart.reduce((acc, card) => {
@@ -18,6 +18,12 @@ function Header( {onClickCart} ) {
 					</div>
 				</div>
 			</Link>
+
+			{
+				userViewName ? <h6 className='ml-3 text-center'>Hello, {userViewName}!</h6> : 
+					<Link to="/login">Login</Link>
+			}
+			
 			
 			<ul className="d-flex list-unstyled" role='button'>
 				<li>
@@ -41,7 +47,8 @@ function Header( {onClickCart} ) {
 				</Link>
 				
 				
-			</ul>				
+			</ul>	
+						
 		</header>);
 
 }

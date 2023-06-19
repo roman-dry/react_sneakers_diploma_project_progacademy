@@ -6,8 +6,10 @@ import Favorites from "./pages/Favorites";
 import Shipping from "./pages/Shipping";
 import Orders from "./pages/Orders/Orders";
 import React, { useState, useEffect, createContext } from "react";
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Link } from 'react-router-dom';
 import axios from 'axios';
+import Registration from "./pages/Registration";
+import Login from "./pages/Login";
 
 export const AppContext = createContext({});
 
@@ -42,6 +44,7 @@ function App() {
 	const [searchValue, setSearchValue] = useState('');
 	const [favorites, setFavorites] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [userViewName, setUserViewName] = useState('');
 
 	useEffect(() => {
 		/*fetch("https://64440fc9466f7c2b4b60d1da.mockapi.io/items/all")
@@ -61,7 +64,7 @@ function App() {
 				//const favoriteResponse = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/favorites');			
 
 
-				const cardsResponse = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/all');
+				const cardsResponse = await axios.get('http://localhost:8080');
 
 				setIsLoading(false);
 
@@ -191,6 +194,8 @@ function App() {
 		return favorites.some(item => Number(item.id) === Number(id))
 	}
 
+	
+
 
 	return (
 
@@ -205,7 +210,9 @@ function App() {
 					onClickMinus={onClickMinus}
 					opened={openDrawer} />
 
-				<Header onClickCart={() => setOpenDrawer(true)} />
+				<Header 
+					onClickCart={() => setOpenDrawer(true)}
+					userViewName={userViewName} />
 
 				<Routes>
 					< Route path="/" element={<Home
@@ -228,6 +235,11 @@ function App() {
 					<Route path="/orders" element={<Orders />} exact />
 
 					<Route path="/shipping" element={ <Shipping /> } exact />
+
+					<Route path="/registration" element={ <Registration /> } exact />
+
+					<Route path="/login" element={ <Login 
+						setUserViewName={setUserViewName} /> } exact />
 				</Routes>
 
 			</div>
@@ -239,104 +251,3 @@ function App() {
 }
 
 export default App;
-
-{/* <div className="content p-5">	
-			<div className="d-flex justify-content-between">
-				<h1 className="m-0 mb-5">{searchValue ? `Search by request: ${searchValue}` : 'All Sneakers'}</h1>
-				<div className="search-block d-flex mt-2">
-					<img className="pl-1" width="20px" src="img/search.svg" alt="Search"></img>
-					<input onChange={onChangeInputValue} 
-							placeholder="Search..."
-							value={searchValue}>								
-					</input>
-					{searchValue && <button onClick={onRemoveSearch} className="removeBtn">
-						<img className="rotate-plus" width="10px" src="img/plus_button.svg" alt="plus-button" />
-					</button>}
-				</div>
-
-			</div>				
-			<div className="d-flex row">
-				{cards.map(card => {
-					if(card.title.toLowerCase().includes(searchValue.toLowerCase())) {
-						return <Card 
-						card={card}
-						key={card.id}
-						onPlus={(card) => addToCart(card)}
-						onFavorite={(card) => addToFavorites(card)}
-						removeFromFavorites={removeFromFavorites}  />
-					} else if(searchValue === "") {
-						return <Card 
-						card={card}
-						key={card.id}
-						onPlus={(card) => addToCart(card)} 
-						onFavorite={(card) => addToFavorites(card)}
-						removeFromFavorites={removeFromFavorites} />
-					}
-
-					
-				})}
-				
-				
-				<div className="card mr-3 position-relative col-xs-12 col-sm-10 col-md-4 col-lg-3 col-xl-2">
-					<button className="button-heart-unliked position-absolute">
-						<img width="15px" src="img/heart-unliked.svg" alt="Heart-unliked" />
-					</button>
-					<img className="mb-5" width="100%" src="img/sneakers/2.png" alt="Sneakers 1" />
-					<div className="stick position-absolute">
-						<h5>Men's sneakers Converse</h5>
-						<div className="d-flex justify-content-between align-items-center">
-							<div>
-								<span>Price: </span>
-								<b>$249</b>
-							</div>
-							<button>
-								<img className="mb-1" width="10px" src="img/plus_button.svg" alt="plus-button" />
-							</button>
-						</div>
-
-					</div>
-					
-				</div>
-				<div className="card mr-3 position-relative col-xs-12 col-sm-10 col-md-4 col-lg-3 col-xl-2">
-					<button className="button-heart-unliked position-absolute">
-						<img width="15px" src="img/heart-unliked.svg" alt="Heart-unliked" />
-					</button>
-					<img className="mb-5" width="100%" src="img/sneakers/3.png" alt="Sneakers 1" />
-					<div className="stick position-absolute">
-						<h5>Men's sneakers Hoglsphere</h5>
-						<div className="d-flex justify-content-between align-items-center">
-							<div>
-								<span>Price: </span>
-								<b>$249</b>
-							</div>
-							<button>
-								<img className="mb-1" width="10px" src="img/plus_button.svg" alt="plus-button" />
-							</button>
-						</div>
-
-					</div>
-					
-				</div>
-				<div className="card position-relative col-xs-12 col-sm-10 col-md-4 col-lg-3 col-xl-2">
-					<button className="button-heart-unliked position-absolute">
-						<img width="15px" src="img/heart-unliked.svg" alt="Heart-unliked" />
-					</button>
-					<img className="mb-5" width="100%" src="img/sneakers/4.png" alt="Sneakers 1" />
-					<div className="stick position-absolute">
-						<h5>Men's sneakers Kobe</h5>
-						<div className="d-flex justify-content-between align-items-center">
-							<div>
-								<span>Price: </span>
-								<b>$249</b>
-							</div>
-							<button>
-								<img className="mb-1" width="10px" src="img/plus_button.svg" alt="plus-button" />
-							</button>
-						</div>
-
-					</div>
-					
-				</div>
-			</div>			
-		</div> */}
-

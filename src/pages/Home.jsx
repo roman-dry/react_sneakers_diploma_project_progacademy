@@ -9,9 +9,11 @@ function Home({ cards,
 	addToCart,
 	addToFavorites,
 	removeFromFavorites,
-	isLoading }) {
+	isLoading
+   }) {
 
 	const { isFavorited } = useContext(AppContext);
+
 
 	function renderCards() {
 		return (isLoading ? [...Array(12)].map(card => {
