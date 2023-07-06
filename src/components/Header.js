@@ -37,7 +37,7 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUse
 				<div className='text-center'>
 					<button className='ml-3 btn' onClick={getLogout}><span className='logoutBtn'><b>Logout</b></span></button></div>
 				</div> : 
-					<Link to="/login">Login</Link>
+					<div className='link-login text-center'><Link to="/login">Login</Link></div>
 			}			
 			
 			<ul className="d-flex list-unstyled" role='button'>
