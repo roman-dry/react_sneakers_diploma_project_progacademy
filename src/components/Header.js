@@ -1,12 +1,25 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 
-function Header( {onClickCart, userViewName} ) {
+function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUser, setCardCart} ) {
 
 	const { cardCart } = useContext(AppContext);
-   const sumOfOrders = cardCart.reduce((acc, card) => {
+	const navigate = useNavigate();
+    const sumOfOrders = cardCart.reduce((acc, card) => {
 		return acc + Number(card.totalPrice)}, 0);
+
+	function getLogout() {
+		setIsLoginTrue(false)
+		setUser({});
+		setCardCart([])
+
+	}
+
+	function onRedirectToOrdersPage(event) {
+		return navigate(event.target.value)
+
+	}
 
 	return (<header className="justify-content-between align-items-center p-5">
 			<Link to="/">
@@ -20,10 +33,12 @@ function Header( {onClickCart, userViewName} ) {
 			</Link>
 
 			{
-				userViewName ? <h6 className='ml-3 text-center'>Hello, {userViewName}!</h6> : 
+				isLoginTrue ? <div className='grettings'><h6 className='pb-0 ml-3 text-center'>Hello, {userViewName}!</h6>
+				<div className='text-center'>
+					<button className='ml-3 btn' onClick={getLogout}><span className='logoutBtn'><b>Logout</b></span></button></div>
+				</div> : 
 					<Link to="/login">Login</Link>
-			}
-			
+			}			
 			
 			<ul className="d-flex list-unstyled" role='button'>
 				<li>
@@ -38,15 +53,13 @@ function Header( {onClickCart, userViewName} ) {
 						<img width="20px" src="img/heart-unliked.svg" alt="Favorite button" />
 					</button>
 				</Link>
-
-				<Link to="/orders">
-					<li className="ml-4">
-						<img width="20px" src="img/user_icon.png" alt="user_icon" />
-
-					</li>
-				</Link>
 				
-				
+				<select className="text-center selectBlock ml-3" onChange={onRedirectToOrdersPage}>
+					<option value="/">Info</option>
+					<option value="/orders">My orders</option>
+					<option value="/shipping">My shipping</option>
+				</select>
+
 			</ul>	
 						
 		</header>);

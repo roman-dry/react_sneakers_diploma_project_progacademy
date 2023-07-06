@@ -14,30 +14,31 @@ function Home({ cards,
 
 	const { isFavorited } = useContext(AppContext);
 
-
 	function renderCards() {
 		return (isLoading ? [...Array(12)].map(card => {
 			return <Card 
 				loading={isLoading}  />
-		}) : cards.map(card => {
+		}) : cards.map((card, index) => {
 			if(card.title.toLowerCase().includes(searchValue.toLowerCase())) {
 				return <Card 
 				{...card}
-				key={card.id}
+				index={index}
 				onPlus={(card) => addToCart(card)}
 				onFavorite={(card) => addToFavorites(card)}
 				removeFromFavorites={removeFromFavorites}
 				favorited={isFavorited(card.id)}
 				loading={isLoading}  />
 			}
-			// } else if(searchValue === "") {
-			// 	return <Card 
-			// 	card={card}
-			// 	key={card.id}
-			// 	onPlus={(card) => addToCart(card)} 
-			// 	onFavorite={(card) => addToFavorites(card)}
-			// 	removeFromFavorites={removeFromFavorites} />
-			// }
+			 else if(searchValue === "") {
+				return <Card 
+				{...card}
+				index={index}
+				onPlus={(card) => addToCart(card)}
+				onFavorite={(card) => addToFavorites(card)}
+				removeFromFavorites={removeFromFavorites}
+				favorited={isFavorited(card.id)}
+				loading={isLoading} />
+			}
 
 			
 		}))
@@ -49,7 +50,7 @@ function Home({ cards,
 			<h1 className="m-0 mb-5">{searchValue ? `Search by request: ${searchValue}` : 'All Sneakers'}</h1>
 			<div className="search-block d-flex mt-2">
 				<img className="pl-1" width="20px" src="img/search.svg" alt="Search"></img>
-				<input onChange={onChangeInputValue} 
+				<input className="inputBlock" onChange={onChangeInputValue} 
 						placeholder="Search..."
 						value={searchValue}>								
 				</input>
@@ -65,7 +66,6 @@ function Home({ cards,
 		</div>
 	</div>
 	)
-
 }
 
 export default Home;

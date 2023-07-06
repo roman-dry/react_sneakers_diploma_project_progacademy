@@ -16,12 +16,14 @@ body {
 	background: white;
 	box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.04);
 	border-radius: 20px;
+	width: 80%;
 	max-width: 1080px;
 	margin: 50px auto;	
 
 	header {
 
 		display: flex;
+		position: relative;
 
 		.headerLeft {
 			display: flex;
@@ -40,6 +42,23 @@ body {
 			background: none;
 			border: none;
 		}	
+
+		.grettings {
+			position: absolute;
+			bottom: 5px;
+			right: 62px;		
+		}
+
+		.logoutBtn {
+			font-size: 12px !important;
+			color: blue;
+		}
+
+		.selectBlock {
+			border-radius: 5px;
+			font-weight: 500;
+
+		}		
 	}
 
 	.inputLine {
@@ -81,8 +100,18 @@ body {
 }
 
 @media (max-width: 684px) {
+	.wrapper {
+		width: 90%;
+	}
 	header {
 		display: block !important;
+		.grettings {
+			position: relative;
+			width: 120px;
+			bottom: -5px !important;
+			left: 80px;	
+			margin: 0 auto !important;
+		}
 	}	
 	.list-unstyled {
 		justify-content: center;
@@ -91,10 +120,21 @@ body {
 	
 }
 
-@media (max-width: 414px) {
+@media (max-width: 415px) {
+	
+	.inputBlock {
+		max-width: 85px !important;			
+	}
+
 	.inputLine {
 		display: block !important;
 		margin-bottom: 15px;
+	}
+}
+
+@media (min-width: 281px) and (max-width: 415px) {
+	.grettings {		
+		top: 215px;
 	}
 }
 

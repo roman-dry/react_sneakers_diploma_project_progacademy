@@ -20,7 +20,6 @@
 	.drawer {
 		transform: translateX(0);
 	}
-
 }
 
 .drawer {
@@ -94,6 +93,7 @@
 	.totalSumButton {
 		width: 100%;
 		height: 50px;
+		margin-bottom: 10px;
 		border: none;
 		border-radius: 10px;
 		background: #9dd558;
@@ -107,7 +107,6 @@
 		&:active {
 			background: darken($color: #9dd558, $amount: 5%)
 		}
-
 
 		b {
 			font-size: 20px;

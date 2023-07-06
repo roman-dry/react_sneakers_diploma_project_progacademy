@@ -1,112 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useForm } from 'react-hook-form';
 
 import styles from './Orders/Orders.module.scss';
 
-function Login({ setUserViewName }) {
-	
-	const [getLog, setGetLog] = useState('');
-	const [getPass, setGetPass] = useState('');
-	const [isLoginTrue, setIsLoginTrue] = useState(false);		
-	const [isWrongPass, setIsWrongPass] = useState(false);
+function Login({ setUserViewName, isLoginTrue, setIsLoginTrue, setUser, setCardCart, setFavorites }) {	
+			
+	const [isWrongPass, setIsWrongPass] = useState("");
+	const { register, handleSubmit } = useForm();
 
-	useEffect(() => {
-		async function getTrueLogin(getLog, getPass) {
-			const { data } = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/login');
-		console.log(data)
-		data.map(obj => {
-			if(obj.email === getLog && obj.password === getPass) {
-
-				console.log('OWOWOWOWOWOOWOWOWOW!!!!!!');
-				setIsLoginTrue(true);
-				setUserViewName(obj.name);
-			}
-			return obj;
-		})
-
+	async function onSubmit(obj) {
+		const { data } = await axios.post('https://diploma-project-w89i.onrender.com/login', obj);
+		if(data.email === obj.email && data.password === obj.password) {
+			const userId = Number(data.id);
+			const cartResponse = await axios.get(`https://diploma-project-w89i.onrender.com/cart?user_id=${userId}`);
+			const favoriteResponse = await axios.get(`https://diploma-project-w89i.onrender.com/favorite?user_id=${userId}`);
+			setCardCart(cartResponse.data);
+			setFavorites(favoriteResponse.data);
+			setUserViewName(data.name);
+			setIsLoginTrue(true);
+			setIsWrongPass("");
+			setUser(data);
+		} else {
+			setIsWrongPass("Wrong login or password!")
 		}
-
-		getTrueLogin(getLog, getPass);
-
-	}, [{getPass}]);
-
-	function getWrongPass() {
-		setIsWrongPass(true);
-
 	}
-
-	// async function getData() {
-	// 	const { data } = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/login');
-	// 	console.log(data)
-	// 	data.map(obj => {
-	// 		if(obj.email === getLog && obj.password === getPass) {
-
-	// 			console.log('OWOWOWOWOWOOWOWOWOW!!!!!!');
-	// 		}
-	// 		return obj;
-	// 	})
-
-	// }
-
-
-	// async function getLogin() {
-
-	// 	console.log('GOOOOOD!!!')
-	// 	const { data } = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/login');
-	//    console.log(data);
 		
-	// 	try {
-	// 		let login = document.getElementById('login').ariaValueText;
-	// 		let password = document.getElementById('password').ariaValueText;
-	// 		const { data } = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/login');
-	// 		console.log(data);
-
-	// 		for(let obj of data) {
-	// 			console.log(obj);
-	// 			if(obj.email === login && obj.password === password) {
-	// 				console.log('GOOd!!')
-	// 			}
-
-	// 		}
-			
-	// 	} catch (error) {
-	// 		alert('Wrong login')
-			
-	// 	}
-	// }
-
-	
 	return (
 		<div>
 			<div className='text-center pb-4'>
-				<h6 className="mt-4">Login or <Link to="/registration"><span>Registration</span></Link></h6>
-				
-									
-					<div>
-						<label  className="mt-3" htmlFor="login">Email</label><br />
-						<input type='login' name="login" id="login" placeholder="john@email.com" 
-							onChange={(e) => setGetLog(e.target.value)} />
-					</div>					
-					<div>
-						<label  className="mt-3" htmlFor="password">Password</label><br />
-						<input type='password' name="password" id="password"
-							onChange={(e) => setGetPass(e.target.value)} />
-					</div>	
-					{
-						isLoginTrue ? <Link to="/"><button className={styles.submitBtn}>SUBMIT</button>	</Link> :
-						<button onClick={getWrongPass} className={styles.submitBtn}>SUBMIT</button>	
-					}
-					{
-						isWrongPass ? <p style={{color: 'red'}}>Wrong login or password!</p> : ''
-					}
-					
-										
-					
-				
+				{
+					!isLoginTrue ? <><h6 className="mt-4">Login or <Link to="/registration"><span>Registration</span></Link></h6>
 
+					<form className="mt-3" onSubmit={handleSubmit(onSubmit)}>					
+						<input {...register('email', { required: true })} className="mt-3" name="email" placeholder="Email" /><br />
+						<input {...register('password', { required: true })} className="mt-3" name="password" type="password" placeholder="Password" /><br />
+						<button type="submit" className={styles.submitBtn}>Submit</button> 
+					</form></> : 
+					<><h3 className='mt-5'>Thank you for login!</h3>
+					<Link to="/"><h4 className="navbar-brand">Get Sneakers</h4></Link></>
+				}
+				<span style={{color: 'red'}}>{isWrongPass}</span>
 			</div>
-			<button>Get</button>
 		</div>
 	)
 }

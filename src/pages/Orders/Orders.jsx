@@ -1,41 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
-import Card from "../../components/Card";
 
 import styles from './Orders.module.scss';
 
-function Orders() {
-	const [orders, setOrders] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
+function Orders( {user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, setTotalSumDescription} ) {
+	
+	const navigate = useNavigate();
+	const totalSumOfOrders = orders.reduce((acc, order) => {
+		return acc + Number(order.totalSum)
+	}, 0);
+	setTotalSumOfOrders(totalSumOfOrders);
+	const totalSumDescription = orders.reduce((acc, order) => {
+		return acc + order.orderDescription + " "
+	}, "");
+	setTotalSumDescription(totalSumDescription);	
+	
 
 	useEffect(() => {
 
-		/*(async () => {
-			const { data } = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/orders');
-			console.log(data)
-
-		})();*/
-
 		async function getOrders() {
-			try {
-				const { data } = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/orders');
-				setOrders(data.map((obj) => obj.cards).flat());
-				setIsLoading(false);
-			} catch (error) {
-				alert('Failed to request the orders');
-
-			}
-
+			if(isLoginTrue) {
+				try {
+					const { data } = await axios.get(`https://diploma-project-w89i.onrender.com/orders/${user.id}`);
+					setOrders(data);
+				} catch (error) {
+					alert('Failed to request the orders');	
+				}				
+			} else {
+				return navigate('/login')
+			};
 		};
 		getOrders();
 
 	}, [])
 
-	async function onRemoveOrders(id) {
+	async function onRemoveOrder(id) {
 		
 		try {
-			await axios.delete(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/orders/${id}`);
-			setOrders([]);
+			await axios.delete(`https://diploma-project-w89i.onrender.com/orders/${id}`);
+			setOrders((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
 
 		} catch (error) {
 			alert('Failed to remove from Orders!')
@@ -45,58 +49,23 @@ function Orders() {
 	}
 	
 	return (<div className="content p-5">
-		<h3>MY ORDERS:</h3>
+		{
+			orders.length ? <div><h3 className="mb-3">MY ORDERS:</h3>
 
-		<div className="d-flex row">
-			{isLoading ? [...Array(12)].map(card => {
-				return <Card
-					loading={isLoading} />
-			}) : orders.map(card => {
-
-				return <Card
-					{...card}
-					key={card.id}
-					loading={isLoading}
-					orders={orders}
-					setOrders={setOrders} />
-
-
-
-			})}
-		</div>
-				
-		<button className={styles.removeOrdersBtn} onClick={() => onRemoveOrders(1)}>CANCEL ORDERS</button>
-		<h4 className="mt-4">Shipping Details</h4>
-		<form className="mt-3" action="https://64440fc9466f7c2b4b60d1da.mockapi.io/items/shipping" method="post">
-			<div>
-				<label for="country">Country</label><br />
-				<input name="country" id="country" placeholder="Ukraine" />
+			{
+				orders.map(order => {
+					return <div key={order.id} className="mb-3">
+						<h6>Order # {order.id}</h6>
+						<p style={{width: '500px'}}>{order.orderDescription}</p>
+						<button className={styles.removeOrdersBtn} onClick={() => onRemoveOrder(order.id)}>CANCEL ORDER</button>
+					</div>
+				})
+			}<Link to="/shipping"><button className={styles.submitBtn}>CONFIRM ALL</button></Link> </div> : <div className=" mb-5 text-center">
+				<h3 className="mb-2">No new orders yet</h3>
+				<Link to="/"><h4 className="navbar-brand">Choose sneakers</h4></Link>
 			</div>
-			<div>
-				<label  className="mt-3" for="city">City</label><br />
-				<input name="city" id="city" placeholder="Kyiv" />
-			</div>
-			<div>
-				<label  className="mt-3" for="address">Street, building, apartment</label><br />
-				<input name="address" id="address" />
-			</div>
-			<div>
-				<label  className="mt-3" for="fullName">Full Name</label><br />
-				<input name="fullName" id="fullName" />
-			</div>
-			<div>
-				<label  className="mt-3" for="phone">Phone</label><br />
-				<input name="phone" id="phone" placeholder="+380" />
-			</div>
-			<div>
-				<label  className="mt-3" for="size">What sizes of the sneakers do you need?</label><br />
-				<input name="size" id="size" placeholder="42-size – 2 pairs" />
-			</div>
-			<div>
-				<button className={styles.submitBtn}>SUBMIT</button>
-			</div>
-		</form>
-
+		}		
+		
 	</div>
 	)
 

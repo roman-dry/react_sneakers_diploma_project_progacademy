@@ -1,4 +1,3 @@
-
 import Header from "./components/Header";
 import Drawer from "./components/Drawer/index.js";
 import Home from "./pages/Home";
@@ -6,7 +5,7 @@ import Favorites from "./pages/Favorites";
 import Shipping from "./pages/Shipping";
 import Orders from "./pages/Orders/Orders";
 import React, { useState, useEffect, createContext } from "react";
-import { Route, Routes, Link } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Registration from "./pages/Registration";
 import Login from "./pages/Login";
@@ -14,30 +13,7 @@ import Login from "./pages/Login";
 export const AppContext = createContext({});
 
 function App() {
-	// const cards = [
-	// 	{
-	// 		title: "Men's sneakers New Balance",
-	// 		price: 249,
-	// 		imageURL: "img/sneakers/1.png"
-	// 	},
-	// 	{
-	// 		title: "Men's sneakers Converse",
-	// 		price: 239,
-	// 		imageURL: "img/sneakers/2.png"
-	// 	},
-	// 	{
-	// 		title: "Men's sneakers Hoglsphere",
-	// 		price: 259,
-	// 		imageURL: "img/sneakers/3.png"
-	// 	},
-	// 	{
-	// 		title: "Men's sneakers Kobe",
-	// 		price: 229,
-	// 		imageURL: "img/sneakers/4.png"
-	// 	},
-
-	// ];
-
+	
 	const [cards, setCards] = useState([]);
 	const [cardCart, setCardCart] = useState([]);
 	const [openDrawer, setOpenDrawer] = useState(false);
@@ -45,51 +21,28 @@ function App() {
 	const [favorites, setFavorites] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [userViewName, setUserViewName] = useState('');
+	const [isLoginTrue, setIsLoginTrue] = useState(false);
+	const [user, setUser] = useState({});
+	const [totalSumOfOrders, setTotalSumOfOrders] = useState(0);
+	const [totalSumDescription, setTotalSumDescription] = useState("");
+	const [orders, setOrders] = useState([]);
+	const navigate = useNavigate();
 
 	useEffect(() => {
-		/*fetch("https://64440fc9466f7c2b4b60d1da.mockapi.io/items/all")
-			.then(res => res.json())
-			.then(data => {
-				setCards(data)
-			});*/
-
-
+		
 		async function fetchData() {
 
 			try {
-				setIsLoading(true);
 
-				//const cartResponse = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart');
-
-				//const favoriteResponse = await axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/favorites');			
-
-
-				const cardsResponse = await axios.get('http://localhost:8080');
-
+				setIsLoading(true)
+				const cardsResponse = await axios.get('https://diploma-project-w89i.onrender.com/');
 				setIsLoading(false);
-
-				//setCardCart(cartResponse.data);
-				//setFavorites(favoriteResponse.data);
 				setCards(cardsResponse.data);
 
 			} catch (error) {
 				alert('Error requesting data')
 			}
 
-
-
-
-			// axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/all').then((res) => {
-			// 	setCards(res.data);
-			// });
-
-			// axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart').then((res) => {
-			// 	setCardCart(res.data);
-			// });
-
-			// axios.get('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/favorites').then((res) => {
-			// 	setFavorites(res.data);
-			// });
 		}
 
 		fetchData();
@@ -98,79 +51,103 @@ function App() {
 
 	async function addToCart(card) {
 
-		try {
-			const findCart = cardCart.find((item) => Number(item.parentId) === Number(card.id));
-			if (findCart) {
-				setCardCart((prev) => prev.filter((itemCard) => Number(itemCard.parentId) !== Number(card.id)))
-				await axios.delete(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart/${findCart.id}`);
-			} else {
-				setCardCart(prev => [...prev, card]);
-				const { data } = await axios.post('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart', card);
-				setCardCart((prev) => prev.map(card => {
-					if (card.parentId === data.parentId) {
-						return {
-							...card,
-							id: data.id
+		if(isLoginTrue) {
+			try {
+				const cart = {
+					"title": card.title,
+					"price": card.price,
+					"imageURL": card.imageURL,
+					"count": card.count,
+					"totalPrice": card.totalPrice,
+					"parent_id": card.parent_id,
+					"user_id": user.id
+				}
+	
+				const findCart = cardCart.find((item) => Number(item.parent_id) === Number(card.parent_id));
+				if (findCart) {
+					setCardCart((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.parent_id)))
+					await axios.delete(`https://diploma-project-w89i.onrender.com/cart/${findCart.id}`);
+				} else {
+					
+					const { data } = await axios.post('https://diploma-project-w89i.onrender.com/cart', cart);
+					setCardCart(prev => [...prev, cart]);
+					setCardCart((prev) => prev.map(cart => {
+						if (cart.parent_id === data.parent_id) {
+							return {
+								...cart,
+								id: data.id
+							}
 						}
-					}
-					return card;
-				}));
+						return cart;
+					}));
+					
+				}
+	
+			} catch (error) {
+				alert('Error add to cart');
+	
 			}
 
-		} catch (error) {
-			alert('Error add to cart');
-
-		}
-
-
-		/*[...cards].filter((card) => {
-			if(id === card.id && !cardCart.includes(card)) {
-				axios.post('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart', card);
-				setCardCart((prev) => [...prev, card])
-				
-			}
-			return cardCart;	
-		} )*/
-
-
+		} else {
+			return navigate('/login')
+		};
 	}
 
 	function onClickMinus(id) {
 
 		try {
-			axios.delete(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart/${id}`);
-			//const newCart = [...cardCart].filter((card) => card.id !== id);
-			//setCardCart(newCart);
+			axios.delete(`https://diploma-project-w89i.onrender.com/cart/${id}`);
 			setCardCart(prev => prev.filter(card => Number(card.id) !== Number(id)));
-
 		} catch (error) {
 			alert('Failed to remove from cart');
-
 		}
 	}
 
 	async function addToFavorites(card) {
-		try {
-			if (favorites.find(cardFav => cardFav.id === card.id)) {
-				axios.delete('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/favorites', card.id);
-				setFavorites((prev) => prev.filter((item) => item.id !== card.id))
-			} else {
-				const { data } = await axios.post('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/favorites', card);
-				setFavorites(prev => [...prev, data])
 
+		if(isLoginTrue) {
+			try {
+				const cardFav = {
+					"title": card.title,
+					"price": card.price,
+					"imageURL": card.imageURL,
+					"count": card.count,
+					"totalPrice": card.totalPrice,
+					"parent_id": card.id,
+					"user_id": user.id
+				}
+	
+				const findCart = favorites.find((item) => Number(item.parent_id) === Number(card.id));
+				if (findCart) {
+					setFavorites((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.id)))
+					await axios.delete(`https://diploma-project-w89i.onrender.com/favorite/${findCart.id}`);
+				} else {
+					
+					const { data } = await axios.post('https://diploma-project-w89i.onrender.com/favorite', cardFav);
+					setFavorites(prev => [...prev, data]);
+										
+				}
+	
+			} catch (error) {
+				alert('Error add to favorites');
+	
 			}
 
-		} catch (error) {
-			alert('Failed to add to Favorites!')
-
-		}
-
+		} else {
+			return navigate('/login')
+		};		
 	}
 
-	function removeFromFavorites(id) {
+	async function removeFromFavorites(id) {
+		let idFav = null;
+		favorites.map(card => {
+			if(card.user_id === user.id && card.parent_id === id) {
+				idFav = card.id;
+			}
+		})
 		try {
-			axios.delete(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/favorites/${id}`);
-			setFavorites(prev => prev.filter(card => card.id !== id))
+			await axios.delete(`https://diploma-project-w89i.onrender.com/favorite/${idFav}`);
+			setFavorites(prev => prev.filter(card =>  card.parent_id !== id ))
 		} catch (error) {
 			alert('Failed to remove from Favorited')
 
@@ -187,19 +164,17 @@ function App() {
 	}
 
 	function isCardAdded(id) {
-		return cardCart.some(item => Number(item.parentId) === Number(id))
+		return cardCart.some(item => Number(item.parent_id) === Number(id))
 	}
 
 	function isFavorited(id) {
-		return favorites.some(item => Number(item.id) === Number(id))
+		return favorites.some(item => Number(item.parent_id) === Number(id))
 	}
-
-	
 
 
 	return (
 
-		<AppContext.Provider value={{
+		<AppContext.Provider key={user.id} value={{
 			cards, cardCart, favorites, isCardAdded, isFavorited, setOpenDrawer,
 			setCardCart, addToCart
 		}}>
@@ -208,45 +183,67 @@ function App() {
 					onClickCloseCart={() => setOpenDrawer(false)}
 					cards={cardCart}
 					onClickMinus={onClickMinus}
-					opened={openDrawer} />
+					opened={openDrawer}
+					user={user} />
 
 				<Header 
 					onClickCart={() => setOpenDrawer(true)}
-					userViewName={userViewName} />
+					userViewName={userViewName}
+					isLoginTrue={isLoginTrue}
+					setIsLoginTrue={setIsLoginTrue}
+					setUser={setUser}
+					setCardCart={setCardCart} />				
 
-				<Routes>
-					< Route path="/" element={<Home
-						cards={cards}
-						cardCart={cardCart}
-						searchValue={searchValue}
-						onChangeInputValue={onChangeInputValue}
-						onRemoveSearch={onRemoveSearch}
-						addToCart={addToCart}
-						addToFavorites={addToFavorites}
-						removeFromFavorites={removeFromFavorites}
-						isLoading={isLoading}
-					/>}
-						exact />
+					<Routes>
+						< Route path="/" element={<Home
+							cards={cards}
+							cardCart={cardCart}
+							searchValue={searchValue}
+							onChangeInputValue={onChangeInputValue}
+							onRemoveSearch={onRemoveSearch}
+							addToCart={addToCart}
+							addToFavorites={addToFavorites}
+							removeFromFavorites={removeFromFavorites}
+							isLoading={isLoading}
+						/>}
+							exact />
 
-					<Route path="/favorites" element={<Favorites
-						addToFavorites={addToFavorites}
-						removeFromFavorites={removeFromFavorites} />} exact />
+						<Route path="/favorites" element={<Favorites
+							addToFavorites={addToFavorites}
+							removeFromFavorites={removeFromFavorites}
+							addToCart={addToCart} />} exact />
 
-					<Route path="/orders" element={<Orders />} exact />
+						<Route path="/orders" element={<Orders 
+							user={user}
+							isLoginTrue={isLoginTrue}
+							setTotalSumOfOrders={setTotalSumOfOrders}
+							orders={orders}
+							setOrders={setOrders}
+							setTotalSumDescription={setTotalSumDescription} />} exact />
 
-					<Route path="/shipping" element={ <Shipping /> } exact />
+						<Route path="/shipping" element={ <Shipping
+							setTotalSumOfOrders={setTotalSumOfOrders}
+							totalSumOfOrders={totalSumOfOrders}
+							user={user}
+							isLoginTrue={isLoginTrue}
+							setOrders={setOrders}
+							totalSumDescription={totalSumDescription}
+							setTotalSumDescription={setTotalSumDescription}  /> } exact />
 
-					<Route path="/registration" element={ <Registration /> } exact />
+						<Route path="/registration" element={ <Registration	 /> } exact />
 
-					<Route path="/login" element={ <Login 
-						setUserViewName={setUserViewName} /> } exact />
-				</Routes>
+						<Route path="/login" element={ <Login 
+							setUserViewName={setUserViewName}
+							isLoginTrue={isLoginTrue}
+							setIsLoginTrue={setIsLoginTrue}
+							setUser={setUser}
+							setCardCart={setCardCart}
+							setFavorites={setFavorites} /> } exact />
+					</Routes>				
 
 			</div>
 
 		</AppContext.Provider>
-
-
 	);
 }
 

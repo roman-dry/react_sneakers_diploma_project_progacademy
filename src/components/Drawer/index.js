@@ -1,45 +1,54 @@
 import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
 import Info from '../Info';
 import { AppContext } from '../../App';
 
 import styles from './Drawer.module.scss';
 
-function Drawer({ onClickCloseCart, onClickMinus, opened }) {
+function Drawer({ onClickCloseCart, onClickMinus, opened, user }) {
 
-	//const [count, setCount] = useState(1);
 	const [isOrderCompleted, setIsOrderCompleted] = useState(false);
 	const [orderId, setOrderId] = useState(null);
 	const { cardCart, setCardCart } = useContext(AppContext);
+	const navigate = useNavigate();
 	const sumOfOrders = cardCart.reduce((acc, card) => {
 		return acc + Number(card.totalPrice)
-	}, 0);
+	}, 0);		
 
-	async function onClickOrder() {
-		try {
-			const { data } = await axios.post('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/orders',
-				{ cards: cardCart });
-			setOrderId(data.id)
-			setIsOrderCompleted(true);
-			setCardCart([]);
-			//await axios.put('https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart', []);
+	async function onClickOrder() {	
+			let orderDescription = 	cardCart.reduce((acc, card) => {
+				return acc + card.title + " " + card.count + "; "
+				
+				}, "")
+			const newOrder = {
+				"user_id": user.id,
+				"status": "inactive",
+				"orderDescription": orderDescription,
+				"totalSum": sumOfOrders * 1.05
+			};
 
-		} catch (error) {
-			alert('Failed to create an order!')
-
-		}
-
-	}
-
+			try {
+			
+				const { data } = await axios.post('https://diploma-project-w89i.onrender.com/orders', newOrder);
+				setOrderId(data.id)
+				setIsOrderCompleted(true);
+				setCardCart([]);
+				await axios.delete(`https://diploma-project-w89i.onrender.com/cart?user_id=${user.id}`)
 	
+			} catch (error) {
+				alert('Failed to create an order!')
+	
+			}				
+
+	}		
 
 	async function onCountPlus(card) {		
-		
+				
 		try {
 		
 			[...cardCart].map((item) => {
-				if (Number(item.id) === Number(card.id)) {
+				if (Number(item.parent_id) === Number(card.parent_id)) {
 					
 					++item.count;
 					item.totalPrice = item.totalPrice + Number(item.price);				
@@ -48,7 +57,17 @@ function Drawer({ onClickCloseCart, onClickMinus, opened }) {
 				}			
 			})
 
-			const { data } = await axios.put(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart/${card.id}`, card);
+			const cart = {
+				"title": card.title,
+				"price": card.price,
+				"imageURL": card.imageURL,
+				"count": card.count,
+				"totalPrice": card.totalPrice,
+				"parent_id": card.parent_id,
+				"user_id": user.id
+			}
+
+			const { data } = await axios.put('https://diploma-project-w89i.onrender.com/cart', cart);
 			setCardCart((prev) => prev.map(item => {
 				if(item.id === data.id) {
 					return {
@@ -71,17 +90,31 @@ function Drawer({ onClickCloseCart, onClickMinus, opened }) {
 	}
 
 	async function onCountMinus(card) {
-		if (card.count > 1) {
-			try {		
+		if (card.count > 1) {			
+				
+			try {
+			
 				[...cardCart].map((item) => {
-					if (Number(item.id) === Number(card.id)) {						
+					if (Number(item.parent_id) === Number(card.parent_id)) {
+						
 						--item.count;
-						item.totalPrice = item.totalPrice - Number(item.price);									
+						item.totalPrice = item.totalPrice - Number(item.price);				
+									
 						return item;
 					}			
 				})
+
+				const cart = {
+					"title": card.title,
+					"price": card.price,
+					"imageURL": card.imageURL,
+					"count": card.count,
+					"totalPrice": card.totalPrice,
+					"parent_id": card.parent_id,
+					"user_id": user.id
+				}
 	
-				const { data } = await axios.put(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart/${card.id}`, card);
+				const { data } = await axios.put('https://diploma-project-w89i.onrender.com/cart', cart);
 				setCardCart((prev) => prev.map(item => {
 					if(item.id === data.id) {
 						return {
@@ -91,29 +124,21 @@ function Drawer({ onClickCloseCart, onClickMinus, opened }) {
 						}
 					}
 					return item;
-				}));
-					
-				
+				}));				
 				
 			} catch (error) {
-				alert('Failed Put-request')
-				
+				alert('Failed Put-request')				
 			}
+			
 		}
 	}
 
-	// async function onClickMinus(id) {
-	// 	try {
-	// 		axios.delete(`https://64440fc9466f7c2b4b60d1da.mockapi.io/items/cart/${id}`)
-	// 		//const newCart = [...cardCart].filter((card) => card.id !== id);
-	// 		await setCardCart((prev) => prev.filter(card => card.id !== id));
+	function onRedirectToOrder() {
+		setIsOrderCompleted(false);
+		onClickCloseCart();
+		return navigate('/orders');
+	}
 
-	// 	} catch (error) {
-	// 		alert('Failed to remove from Cart!')
-
-	// 	}
-
-	// }
 	return (<div className={`${styles.overlay} ${opened ? styles.overlayVisible : ''}`}>
 		<div className={styles.drawer}>
 			<div className="d-flex justify-content-between align-items-center mb-4">
@@ -170,7 +195,9 @@ function Drawer({ onClickCloseCart, onClickMinus, opened }) {
 				</> : (
 					<Info
 						title={isOrderCompleted ? "Order completed" : "The cart is still empty"}
-						description={isOrderCompleted ? `Item id-${orderId} is ready to ship` : "Add at least one pair of sneakers"}
+						description={isOrderCompleted ? `Order id-${orderId} is ready to ship` : "Add at least one pair of sneakers"}
+						confirm_button={isOrderCompleted && <button onClick={onRedirectToOrder} 
+							className={styles.totalSumButton}>CONFIRM ORDER</button>}
 						image={isOrderCompleted ? "img/order_completed.png" : "img/basket.svg"} />)}
 
 		</div>
@@ -178,4 +205,3 @@ function Drawer({ onClickCloseCart, onClickMinus, opened }) {
 }
 
 export default Drawer;
-// onClick={() => onCountMinus(card.id)}
