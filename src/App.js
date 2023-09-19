@@ -27,6 +27,7 @@ function App() {
 	const [totalSumDescription, setTotalSumDescription] = useState("");
 	const [orders, setOrders] = useState([]);
 	const navigate = useNavigate();
+	const url = 'https://diploma-project-w89i.onrender.com/';
 
 	useEffect(() => {
 		
@@ -35,7 +36,7 @@ function App() {
 			try {
 
 				setIsLoading(true)
-				const cardsResponse = await axios.get('https://diploma-project-w89i.onrender.com/');
+				const cardsResponse = await axios.get(url);
 				setIsLoading(false);
 				setCards(cardsResponse.data);
 
