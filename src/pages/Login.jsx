@@ -5,17 +5,17 @@ import { useForm } from 'react-hook-form';
 
 import styles from './Orders/Orders.module.scss';
 
-function Login({ setUserViewName, isLoginTrue, setIsLoginTrue, setUser, setCardCart, setFavorites }) {	
+function Login({ setUserViewName, isLoginTrue, setIsLoginTrue, setUser, setCardCart, setFavorites, url }) {	
 			
 	const [isWrongPass, setIsWrongPass] = useState("");
 	const { register, handleSubmit } = useForm();
 
 	async function onSubmit(obj) {
-		const { data } = await axios.post('https://diploma-project-w89i.onrender.com/login', obj);
+		const { data } = await axios.post(`${url}login`, obj);
 		if(data.email === obj.email && data.password === obj.password) {
 			const userId = Number(data.id);
-			const cartResponse = await axios.get(`https://diploma-project-w89i.onrender.com/cart?user_id=${userId}`);
-			const favoriteResponse = await axios.get(`https://diploma-project-w89i.onrender.com/favorite?user_id=${userId}`);
+			const cartResponse = await axios.get(`${url}cart?user_id=${userId}`);
+			const favoriteResponse = await axios.get(`${url}favorite?user_id=${userId}`);
 			setCardCart(cartResponse.data);
 			setFavorites(favoriteResponse.data);
 			setUserViewName(data.name);

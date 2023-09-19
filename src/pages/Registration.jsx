@@ -5,17 +5,17 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-function Registration() {
+function Registration({ url }) {
 	const { register, handleSubmit } = useForm();
 	const [isSubmited, setIsSubmited] = useState(true)
 	const [isFreeLogin, setisFreelogin] = useState("");
 
 	async function onSubmit(obj) {
-		const { data } = await axios.get(`https://diploma-project-w89i.onrender.com/login?email=${obj.email}`);
+		const { data } = await axios.get(`${url}login?email=${obj.email}`);
 		if(obj.email === data.email) {
 			setisFreelogin("User with this email already exists");
 		} else {
-			await axios.post('https://diploma-project-w89i.onrender.com/registration', obj);
+			await axios.post(`${url}registration`, obj);
 			setIsSubmited(false);
 		}
 

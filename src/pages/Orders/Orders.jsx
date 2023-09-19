@@ -4,7 +4,7 @@ import axios from "axios";
 
 import styles from './Orders.module.scss';
 
-function Orders( {user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, setTotalSumDescription} ) {
+function Orders({ user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, setTotalSumDescription, url }) {
 	
 	const navigate = useNavigate();
 	const totalSumOfOrders = orders.reduce((acc, order) => {
@@ -22,7 +22,7 @@ function Orders( {user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, set
 		async function getOrders() {
 			if(isLoginTrue) {
 				try {
-					const { data } = await axios.get(`https://diploma-project-w89i.onrender.com/orders/${user.id}`);
+					const { data } = await axios.get(`${url}orders/${user.id}`);
 					setOrders(data);
 				} catch (error) {
 					alert('Failed to request the orders');	
@@ -38,7 +38,7 @@ function Orders( {user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, set
 	async function onRemoveOrder(id) {
 		
 		try {
-			await axios.delete(`https://diploma-project-w89i.onrender.com/orders/${id}`);
+			await axios.delete(`${url}orders/${id}`);
 			setOrders((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
 
 		} catch (error) {

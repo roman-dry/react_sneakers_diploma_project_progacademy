@@ -6,7 +6,7 @@ import { AppContext } from '../../App';
 
 import styles from './Drawer.module.scss';
 
-function Drawer({ onClickCloseCart, onClickMinus, opened, user }) {
+function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 
 	const [isOrderCompleted, setIsOrderCompleted] = useState(false);
 	const [orderId, setOrderId] = useState(null);
@@ -30,11 +30,11 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user }) {
 
 			try {
 			
-				const { data } = await axios.post('https://diploma-project-w89i.onrender.com/orders', newOrder);
+				const { data } = await axios.post(`${url}orders`, newOrder);
 				setOrderId(data.id)
 				setIsOrderCompleted(true);
 				setCardCart([]);
-				await axios.delete(`https://diploma-project-w89i.onrender.com/cart?user_id=${user.id}`)
+				await axios.delete(`${url}cart?user_id=${user.id}`)
 	
 			} catch (error) {
 				alert('Failed to create an order!')
@@ -67,7 +67,7 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user }) {
 				"user_id": user.id
 			}
 
-			const { data } = await axios.put('https://diploma-project-w89i.onrender.com/cart', cart);
+			const { data } = await axios.put(`${url}cart`, cart);
 			setCardCart((prev) => prev.map(item => {
 				if(item.id === data.id) {
 					return {
@@ -114,7 +114,7 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user }) {
 					"user_id": user.id
 				}
 	
-				const { data } = await axios.put('https://diploma-project-w89i.onrender.com/cart', cart);
+				const { data } = await axios.put(`${url}cart`, cart);
 				setCardCart((prev) => prev.map(item => {
 					if(item.id === data.id) {
 						return {

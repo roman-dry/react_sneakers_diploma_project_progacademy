@@ -5,7 +5,7 @@ import axios from "axios";
 
 import styles from './Orders/Orders.module.scss';
 
-function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDescription }) {
+function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDescription, url }) {
 	const [shippings, setShippings] = useState([]);
 	const [isSubmited, setIsSubmited] = useState(true);
 	const { register, handleSubmit } = useForm();
@@ -16,7 +16,7 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 		async function getShipping() {
 			if(isLoginTrue) {
 				try {
-					const { data } = await axios.get(`https://diploma-project-w89i.onrender.com/shippings/${user.id}`);
+					const { data } = await axios.get(`${url}shippings/${user.id}`);
 					setShippings(data);					
 				} catch (error) {
 					alert('Failed to get Shipping!')					
@@ -34,7 +34,7 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 	async function onRemoveShipping(id) {
 		
 		try {
-			await axios.delete(`https://diploma-project-w89i.onrender.com/shippings/${id}`);
+			await axios.delete(`${url}shippings/${id}`);
 			setShippings((prev) => prev.filter((shipping) => Number(shipping.id) !== Number(id)));
 
 		} catch (error) {
@@ -45,9 +45,9 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 	}
 
 	async function onSubmit(data) {
-		await axios.post('https://diploma-project-w89i.onrender.com/shippings', data);
+		await axios.post(`${url}shippings`, data);
 		setIsSubmited(false);
-		await axios.patch(`https://diploma-project-w89i.onrender.com/orders?user_id=${user.id}&status=active`);
+		await axios.patch(`${url}orders?user_id=${user.id}&status=active`);
 		setOrders([]);
 	}	
 

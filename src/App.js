@@ -67,10 +67,10 @@ function App() {
 				const findCart = cardCart.find((item) => Number(item.parent_id) === Number(card.parent_id));
 				if (findCart) {
 					setCardCart((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.parent_id)))
-					await axios.delete(`https://diploma-project-w89i.onrender.com/cart/${findCart.id}`);
+					await axios.delete(`${url}cart/${findCart.id}`);
 				} else {
 					
-					const { data } = await axios.post('https://diploma-project-w89i.onrender.com/cart', cart);
+					const { data } = await axios.post(`${url}cart`, cart);
 					setCardCart(prev => [...prev, cart]);
 					setCardCart((prev) => prev.map(cart => {
 						if (cart.parent_id === data.parent_id) {
@@ -97,7 +97,7 @@ function App() {
 	function onClickMinus(id) {
 
 		try {
-			axios.delete(`https://diploma-project-w89i.onrender.com/cart/${id}`);
+			axios.delete(`${url}cart/${id}`);
 			setCardCart(prev => prev.filter(card => Number(card.id) !== Number(id)));
 		} catch (error) {
 			alert('Failed to remove from cart');
@@ -121,10 +121,10 @@ function App() {
 				const findCart = favorites.find((item) => Number(item.parent_id) === Number(card.id));
 				if (findCart) {
 					setFavorites((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.id)))
-					await axios.delete(`https://diploma-project-w89i.onrender.com/favorite/${findCart.id}`);
+					await axios.delete(`${url}favorite/${findCart.id}`);
 				} else {
 					
-					const { data } = await axios.post('https://diploma-project-w89i.onrender.com/favorite', cardFav);
+					const { data } = await axios.post(`${url}favorite`, cardFav);
 					setFavorites(prev => [...prev, data]);
 										
 				}
@@ -147,7 +147,7 @@ function App() {
 			}
 		})
 		try {
-			await axios.delete(`https://diploma-project-w89i.onrender.com/favorite/${idFav}`);
+			await axios.delete(`${url}favorite/${idFav}`);
 			setFavorites(prev => prev.filter(card =>  card.parent_id !== id ))
 		} catch (error) {
 			alert('Failed to remove from Favorited')
@@ -185,7 +185,8 @@ function App() {
 					cards={cardCart}
 					onClickMinus={onClickMinus}
 					opened={openDrawer}
-					user={user} />
+					user={user}
+					url={url} />
 
 				<Header 
 					onClickCart={() => setOpenDrawer(true)}
@@ -220,7 +221,8 @@ function App() {
 							setTotalSumOfOrders={setTotalSumOfOrders}
 							orders={orders}
 							setOrders={setOrders}
-							setTotalSumDescription={setTotalSumDescription} />} exact />
+							setTotalSumDescription={setTotalSumDescription}
+							url={url} />} exact />
 
 						<Route path="/shipping" element={ <Shipping
 							setTotalSumOfOrders={setTotalSumOfOrders}
@@ -229,9 +231,10 @@ function App() {
 							isLoginTrue={isLoginTrue}
 							setOrders={setOrders}
 							totalSumDescription={totalSumDescription}
-							setTotalSumDescription={setTotalSumDescription}  /> } exact />
+							setTotalSumDescription={setTotalSumDescription}
+							url={url}  /> } exact />
 
-						<Route path="/registration" element={ <Registration	 /> } exact />
+						<Route path="/registration" element={ <Registration url={url}	 /> } exact />
 
 						<Route path="/login" element={ <Login 
 							setUserViewName={setUserViewName}
@@ -239,7 +242,8 @@ function App() {
 							setIsLoginTrue={setIsLoginTrue}
 							setUser={setUser}
 							setCardCart={setCardCart}
-							setFavorites={setFavorites} /> } exact />
+							setFavorites={setFavorites}
+							url={url} /> } exact />
 					</Routes>				
 
 			</div>
