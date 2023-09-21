@@ -6,6 +6,8 @@ import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+import 'react-phone-number-input/style.css';
+
 function Registration({ url }) {
 	const { register,
 			handleSubmit,
@@ -53,10 +55,11 @@ function Registration({ url }) {
 					rules={{ required: true }}
 					render={({ field: { onChange, value } }) => (
 						<PhoneInput
-						value={value}
-						onChange={onChange}
-						defaultCountry="UA"
-						id="phone"
+							placeholder="Phone"
+							value={value}
+							onChange={onChange}
+							defaultCountry="UA"
+							id="phone"
 						/>
 					)}
 					/>
