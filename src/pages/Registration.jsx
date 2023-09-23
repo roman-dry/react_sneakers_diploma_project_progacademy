@@ -7,6 +7,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 import 'react-phone-number-input/style.css';
+import stylesReg from './Registration.module.scss';
 
 function Registration({ url }) {
 	const { register,
@@ -37,22 +38,24 @@ function Registration({ url }) {
 			{
 				isSubmited ? <form className="mt-3" onSubmit={handleSubmit(onSubmit)}>
 				<span style={{color: 'red'}}>{isFreeLogin}</span><br />
-				<input {...register('name', { required: true, minLength: 4, maxLength: 20, pattern: /^[A-Za-z]+$/i })} 
+				<input {...register('name', { required: true, pattern: /^[A-Za-z]+$/i })} 
 					name="name" placeholder="Name" /><br />
 				<input {...register('email', 
 					{ required: true, 
 					pattern: {
-						value: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-						message: "invalid email address"
+						value: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 					} })} 
-					className="mt-3" name="email" placeholder="Email" /><br />
-				{/* <input {...register('phone', { required: true })} className="mt-3" name="phone" placeholder="Phone" /> */}
-				<div>
-					<label htmlFor="phone">Phone Number</label>
+					className="mt-3" name="email" placeholder="Email" id="email" /><br />
+				{errors["email"] && (
+						<p className={stylesReg.colorError} >Invalid email address!</p>
+				)}
+				<div className={stylesReg.phoneController}>
 					<Controller
 					name="phone"
 					control={control}
-					rules={{ required: true }}
+					rules={{
+						validate: (value) => isValidPhoneNumber(value)
+					  }}
 					render={({ field: { onChange, value } }) => (
 						<PhoneInput
 							placeholder="Phone"
@@ -63,10 +66,15 @@ function Registration({ url }) {
 						/>
 					)}
 					/>
-					{errors.phone && <p className="error-message">Invalid Phone</p>}
+					{errors["phone"] && (
+						<p className={stylesReg.colorError} >Invalid Phone!</p>
+					)}
 				</div>
 				<br />
-				<input {...register('password', { required: true, minLength: 6 })} className="mt-3" name="password" type="password" placeholder="Password" /><br />
+				<input {...register('password', { required: true, minLength: 6 })} style={{marginTop: -5}} name="password" type="password" placeholder="Password" id="password" /><br />
+				{errors["password"] && (
+						<p className={stylesReg.colorError} >Password is too short!</p>
+				)}
 				<button type="submit" className={styles.submitBtn}>Submit</button> 
 			</form> :
 				<>

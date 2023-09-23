@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import axios from "axios";
 
 import styles from './Orders/Orders.module.scss';
+import 'react-phone-number-input/style.css';
+import stylesReg from './Registration.module.scss';
 
 function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDescription, url }) {
 	const [shippings, setShippings] = useState([]);
 	const [isSubmited, setIsSubmited] = useState(true);
-	const { register, handleSubmit } = useForm();
+	const [countries, setCountries] = useState([]);
 	const navigate = useNavigate();
+	const { register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+		control } = useForm({
+						mode: "onBlur"
+					});
 
 	useEffect(() => {
 		
@@ -31,6 +41,11 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 
 	}, [])
 
+	useEffect(() => {
+		const data = require('./CountryData.json');
+		setCountries(data);
+	}, [])
+
 	async function onRemoveShipping(id) {
 		
 		try {
@@ -49,7 +64,9 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 		setIsSubmited(false);
 		await axios.patch(`${url}orders?user_id=${user.id}&status=active`);
 		setOrders([]);
+		reset();
 	}	
+		
 
 	return (<div className="p-4">
 		
@@ -77,12 +94,64 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 		}
 		{isSubmited ? <div><h4 className="mt-4">Shipping Details</h4>
 				<form className="mt-3" onSubmit={handleSubmit(onSubmit)}>
-					<input {...register('country', { required: true })} name="country" placeholder="Country" /><br />
-					<input {...register('city', { required: true })} className="mt-3" name="city" placeholder="City" /><br />
+					<select className={stylesReg.selectCountry} {...register("country", { required: 'Please, select country' })}>
+						<option value=''>--Select Country--</option>
+						{
+							countries.map(el => {
+								return <option key={el.country}>{el.country}</option>
+							})
+						}
+					</select><br />
+				
+					{
+						errors.country && <><span className={stylesReg.colorError}>{errors.country.message}</span><br /></>
+					}
+					
+					<input {...register('city', { required: true, pattern: /^[A-Za-z]+$/i })} className="mt-3" name="city" placeholder="City" /><br />
+
+					{errors["city"] && (
+						<p className={stylesReg.colorError} >Blank field!</p>
+					)}
+
 					<input {...register('address', { required: true })} className="mt-3" name="address" placeholder="Address" /><br />
-					<input {...register('fullname', { required: true})} className="mt-3" name="fullname" placeholder="Fullname" /><br />
-					<input {...register('phone', { required: true })} className="mt-3" name="phone" placeholder="+380" /><br />
-					<input {...register('size', { required: true })} className="mt-3" name="size" placeholder="42-size – 2 pairs" /><br />
+
+					{errors["address"] && (
+						<p className={stylesReg.colorError} >Blank field!</p>
+					)}
+					<input {...register('fullname', { required: true })} className="mt-3" name="fullname" id="fullname" placeholder="Fullname" /><br />
+
+					{errors["fullname"] && (
+						<p className={stylesReg.colorError} >Blank field!</p>
+					)}
+
+					<div className={stylesReg.phoneControllerShip}>
+						<Controller
+						name="phone"
+						control={control}
+						rules={{
+							validate: (value) => isValidPhoneNumber(value)
+						}}
+						render={({ field: { onChange, value } }) => (
+							<PhoneInput
+								placeholder="Phone"
+								value={value}
+								onChange={onChange}
+								defaultCountry="UA"
+								id="phone"
+							/>
+						)}
+						/>
+						{errors["phone"] && (
+							<p className={stylesReg.colorError} >Invalid Phone!</p>
+						)}
+					</div>
+					<br />
+					<input {...register('size', { required: true, maxLength: 100 })} className="mt-3" name="size" id="size" placeholder="42-size – 2 pairs" /><br />
+
+					{errors["size"] && (
+						<p className={stylesReg.colorError} >Maximum 100 symbols!</p>
+					)}
+					
 					<input {...register('totalDesc', { required: true })} className="mt-3" name="totalDesc" type="hidden" 
 						value={totalSumDescription} /><br />								
 					<button type="submit" className={styles.submitBtn}>Submit</button> 

@@ -54,7 +54,7 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUse
 					</button>
 				</Link>
 				
-				<select className="text-center selectBlock ml-3" onChange={onRedirectToOrdersPage}>
+				<select className="text-center selectBlock ml-3" onClick={onRedirectToOrdersPage}>
 					<option value="/">Info</option>
 					<option value="/orders">My orders</option>
 					<option value="/shipping">My shipping</option>
