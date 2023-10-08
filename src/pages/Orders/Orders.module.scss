@@ -1,5 +1,5 @@
 .removeOrdersBtn {
-	min-width: 230px;
+	max-width: 230px;
 	height: 30px;
 	border: none;
 	border-radius: 10px;
@@ -21,9 +21,10 @@
 }
 
 .submitBtn {
-	min-width: 230px;
+	max-width: 230px;
 	height: 30px;
-	margin-top: 20px !important;
+	margin-top: 20px;
+	margin-right: 5px;
 	border: none;
 	border-radius: 10px;
 	background: #9dd558;
@@ -40,5 +41,27 @@
 
 	b {
 		font-size: 25px;
+	}
+}
+
+.formWidth {
+	min-width: 250px;
+	margin-top: 10px;
+}
+
+.formWidthEdit {
+	min-width: 250px;
+	margin-top: 3px;
+}
+
+@media (max-width: 280px) {
+	.formWidthEdit {
+		min-width: 130px;
+		max-width: 200px;
+	}
+
+	.formWidth {
+		min-width: 130px;
+		max-width: 200px;
 	}
 }

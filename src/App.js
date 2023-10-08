@@ -9,6 +9,10 @@ import { Route, Routes, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Registration from "./pages/Registration";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
+import AdminEdit from "./pages/AdminEdit";
+import AdminDelete from "./pages/AdminDelete";
+import UserEdit from "./pages/UserEdit";
 
 export const AppContext = createContext({});
 
@@ -27,11 +31,12 @@ function App() {
 	const [totalSumDescription, setTotalSumDescription] = useState("");
 	const [orders, setOrders] = useState([]);
 	const navigate = useNavigate();
-	const url = 'https://diploma-project-w89i.onrender.com/';
+	//const url = 'https://diploma-project-w89i.onrender.com/';
+	const url = 'http://localhost:8080/';
 
 	useEffect(() => {
 		
-		async function fetchData() {
+		async function fetchData() {			
 
 			try {
 
@@ -49,7 +54,7 @@ function App() {
 		fetchData();
 
 	}, []);
-
+	
 	async function addToCart(card) {
 
 		if(isLoginTrue) {
@@ -58,8 +63,8 @@ function App() {
 					"title": card.title,
 					"price": card.price,
 					"imageURL": card.imageURL,
-					"count": card.count,
-					"totalPrice": card.totalPrice,
+					"count": 1,
+					"totalPrice": card.price,
 					"parent_id": card.parent_id,
 					"user_id": user.id
 				}
@@ -67,7 +72,7 @@ function App() {
 				const findCart = cardCart.find((item) => Number(item.parent_id) === Number(card.parent_id));
 				if (findCart) {
 					setCardCart((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.parent_id)))
-					await axios.delete(`${url}cart/${findCart.id}`);
+					await axios.delete(`${url}carted?user_id=${user.id}&parent_id=${findCart.parent_id}`);
 				} else {
 					
 					const { data } = await axios.post(`${url}cart`, cart);
@@ -94,11 +99,11 @@ function App() {
 		};
 	}
 
-	function onClickMinus(id) {
+	async function onClickMinus(id) {
 
 		try {
-			axios.delete(`${url}cart/${id}`);
-			setCardCart(prev => prev.filter(card => Number(card.id) !== Number(id)));
+			await axios.delete(`${url}cart?user_id=${user.id}&parent_id=${id}`);
+			setCardCart(prev => prev.filter(card => Number(card.parent_id) !== Number(id)));
 		} catch (error) {
 			alert('Failed to remove from cart');
 		}
@@ -112,16 +117,16 @@ function App() {
 					"title": card.title,
 					"price": card.price,
 					"imageURL": card.imageURL,
-					"count": card.count,
-					"totalPrice": card.totalPrice,
-					"parent_id": card.id,
+					"count": 1,
+					"totalPrice": card.price,
+					"parent_id": card.parent_id,
 					"user_id": user.id
 				}
 	
-				const findCart = favorites.find((item) => Number(item.parent_id) === Number(card.id));
+				const findCart = favorites.find((item) => Number(item.parent_id) === Number(card.parent_id));
 				if (findCart) {
-					setFavorites((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.id)))
-					await axios.delete(`${url}favorite/${findCart.id}`);
+					setFavorites((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.parent_id)))
+					await axios.delete(`${url}favorite/${findCart.parent_id}`);
 				} else {
 					
 					const { data } = await axios.post(`${url}favorite`, cardFav);
@@ -143,18 +148,18 @@ function App() {
 		let idFav = null;
 		favorites.map(card => {
 			if(card.user_id === user.id && card.parent_id === id) {
-				idFav = card.id;
+				idFav = card.parent_id;
 			}
+			return card
 		})
 		try {
 			await axios.delete(`${url}favorite/${idFav}`);
 			setFavorites(prev => prev.filter(card =>  card.parent_id !== id ))
 		} catch (error) {
 			alert('Failed to remove from Favorited')
-
 		}
 
-	}
+	}	
 
 	function onChangeInputValue(event) {
 		setSearchValue(event.target.value)
@@ -171,7 +176,6 @@ function App() {
 	function isFavorited(id) {
 		return favorites.some(item => Number(item.parent_id) === Number(id))
 	}
-
 
 	return (
 
@@ -204,6 +208,7 @@ function App() {
 							onChangeInputValue={onChangeInputValue}
 							onRemoveSearch={onRemoveSearch}
 							addToCart={addToCart}
+							onClickMinus={onClickMinus}
 							addToFavorites={addToFavorites}
 							removeFromFavorites={removeFromFavorites}
 							isLoading={isLoading}
@@ -213,7 +218,8 @@ function App() {
 						<Route path="/favorites" element={<Favorites
 							addToFavorites={addToFavorites}
 							removeFromFavorites={removeFromFavorites}
-							addToCart={addToCart} />} exact />
+							addToCart={addToCart}
+							 />} exact />
 
 						<Route path="/orders" element={<Orders 
 							user={user}
@@ -244,6 +250,12 @@ function App() {
 							setCardCart={setCardCart}
 							setFavorites={setFavorites}
 							url={url} /> } exact />
+
+						<Route path="/admin" element={ <Admin url={url} user={user} /> } exact />
+						<Route path="/edit" element={ <AdminEdit url={url} user={user} /> } exact />
+						<Route path="/remove" element={ <AdminDelete url={url} user={user} /> } exact />
+						<Route path="/user" element={ <UserEdit url={url} user={user} isLoginTrue={isLoginTrue} /> } exact />
+						
 					</Routes>				
 
 			</div>

@@ -4,27 +4,31 @@ import { AppContext } from '../../App';
 
 import'./card.scss';
 
-function Card( {index, id, parent_id, title, price, imageURL, count, totalPrice, onPlus, onFavorite, removeFromFavorites,
+function Card( {id, parent_id, title, price, imageURL, count, totalPrice, onPlus, onFavorite, removeFromFavorites,
 	favorited = false, loading = false} ) {
 
-	const [buttonColorChecked, setButtonColorChecked] = useState(false);
-	const [buttonChecked, setButtonChecked] = useState(false);
+	const { isCardAdded, favorites } = useContext(AppContext);
 	const [buttonColorHeart, setButtonColorHeart] = useState(favorited);
-	const [buttonHeartLiked, setButtonHeartLiked] = useState(favorited);	
-
-	const { isCardAdded } = useContext(AppContext);
+	const [buttonHeartLiked, setButtonHeartLiked] = useState(favorited);
+	
 	const card = {id, parent_id, title, price, imageURL, count, totalPrice}
 
-	function onClickPlus() {		
-		setButtonColorChecked(!buttonColorChecked);
-		setButtonChecked(!buttonChecked);
-		onPlus(card)		
-	}
-	
+	function onClickPlus() {
+		onPlus(card);		
+	}	
 
-	function onClickFavorite() {		
-		setButtonColorHeart(!buttonColorHeart);
-		setButtonHeartLiked(!buttonHeartLiked);
+	function onClickFavorite(id) {
+		
+		const findFavoriteCard = favorites.find((item) => Number(item.parent_id) === Number(id));
+
+		if(findFavoriteCard) {
+			setButtonColorHeart(false);
+			setButtonHeartLiked(false);
+		} else {
+			setButtonColorHeart(true);
+			setButtonHeartLiked(true);
+		}
+
 		!buttonColorHeart ? onFavorite(card)	: 	removeFromFavorites(parent_id)
 	}
 	
@@ -45,8 +49,8 @@ function Card( {index, id, parent_id, title, price, imageURL, count, totalPrice,
 						<rect x="187" y="163" rx="5" ry="5" width="32" height="27" /> 
 						<rect x="184" y="3" rx="5" ry="5" width="32" height="32" /> 
 						<rect x="-4" y="-3" rx="10" ry="10" width="182" height="135" />
-				</ContentLoader>) : (<div key={index}>{onFavorite && <button className={buttonColorHeart ? "button-heart-liked" : "button-heart-unliked"} 
-				onClick={onClickFavorite}>
+				</ContentLoader>) : (<div>{onFavorite && <button className={buttonColorHeart ? "button-heart-liked" : "button-heart-unliked"} 
+				onClick={() => onClickFavorite(card.id)}>
 					<img width="15px" 
 						src={buttonHeartLiked ? "img/heart-liked.svg" : "img/heart-unliked.svg"} 
 						alt="Heart-liked" />

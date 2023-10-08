@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 
@@ -12,28 +12,24 @@ function Orders({ user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, set
 	}, 0);
 	setTotalSumOfOrders(totalSumOfOrders);
 	const totalSumDescription = orders.reduce((acc, order) => {
-		return acc + order.orderDescription + " "
+		return acc + order.orderDescription + "  "
 	}, "");
 	setTotalSumDescription(totalSumDescription);	
 	
-
-	useEffect(() => {
-
-		async function getOrders() {
-			if(isLoginTrue) {
-				try {
-					const { data } = await axios.get(`${url}orders/${user.id}`);
-					setOrders(data);
-				} catch (error) {
-					alert('Failed to request the orders');	
-				}				
-			} else {
-				return navigate('/login')
-			};
+	async function getOrders() {
+		if(isLoginTrue) {
+			try {
+				const { data } = await axios.get(`${url}orders/${user.id}`);
+				setOrders(data);
+			} catch (error) {
+				alert('Failed to request the orders');	
+			}				
+		} else {
+			return navigate('/login')
 		};
-		getOrders();
-
-	}, [])
+	};
+	getOrders();
+	
 
 	async function onRemoveOrder(id) {
 		
@@ -54,9 +50,17 @@ function Orders({ user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, set
 
 			{
 				orders.map(order => {
+					const listOfOrdersDescription = order.orderDescription.split("  ");
+
 					return <div key={order.id} className="mb-3">
 						<h6>Order # {order.id}</h6>
-						<p style={{width: '500px'}}>{order.orderDescription}</p>
+						{
+							listOfOrdersDescription.map(item => {
+								return <ul>
+									<li style={{listStyleType:'none'}}>{item}</li>
+								</ul>
+							})
+						}
 						<button className={styles.removeOrdersBtn} onClick={() => onRemoveOrder(order.id)}>CANCEL ORDER</button>
 					</div>
 				})

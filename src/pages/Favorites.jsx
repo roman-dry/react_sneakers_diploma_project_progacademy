@@ -17,6 +17,7 @@ function Favorites({
 				
 					return <Card 
 					{...card}
+					key={index}
 					index={index}
 					onPlus={(card) => addToCart(card)}
 					favorited={true}

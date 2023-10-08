@@ -65,8 +65,7 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 		await axios.patch(`${url}orders?user_id=${user.id}&status=active`);
 		setOrders([]);
 		reset();
-	}	
-		
+	}		
 
 	return (<div className="p-4">
 		
@@ -75,16 +74,26 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 
 			{
 				shippings.map(shipping => {
+					const listOfShippingDesc = shipping.totalDesc.split("  ");
 					return <div key={shipping.id} className="mb-3">
-						<h6 className="mb-2">Shipping # {shipping.id}</h6>
+						<h6 className="mb-2 mt-5">Shipping # {shipping.id}</h6>
 						<li>Country: {shipping.country}</li>
 						<li>City: {shipping.city}</li>
 						<li>Address: {shipping.address}</li>
 						<li>Fullname: {shipping.fullName}</li>
 						<li>Phone: {shipping.phone}</li>
 						<li>Comment: {shipping.size}</li>
-						<h6 className="mt-2">{shipping.totalDesc} is(are) ready for shipping</h6>
-						<b>Total amount due: ${shipping.total_sum}</b><br />
+						<li>Sneakers: </li>
+						{
+							listOfShippingDesc.map(item => {
+								return <ul className="mt-2">
+									<li style={{listStyleType: 'none'}}>{item}</li>
+								</ul>
+							})
+							
+						}
+						<h5 className="mt-2 ml-5 mb-3">{listOfShippingDesc.length > 1 ? 'are' : 'is'} ready for shipping!</h5>
+						<b>Total amount due: ${shipping.total_sum.toFixed(2)}</b><br />
 						<button className={styles.removeOrdersBtn} onClick={() => onRemoveShipping(shipping.id)}>CANCEL SHIPPING</button>
 					</div>
 				})
@@ -92,7 +101,7 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 				<Link to="/"><h5 className="navbar-brand">Choose new sneakers</h5></Link>
 			</div>
 		}
-		{isSubmited ? <div><h4 className="mt-4">Shipping Details</h4>
+		{isSubmited ? <div><h4 className="mt-5">Shipping Details</h4>
 				<form className="mt-3" onSubmit={handleSubmit(onSubmit)}>
 					<select className={stylesReg.selectCountry} {...register("country", { required: 'Please, select country' })}>
 						<option value=''>--Select Country--</option>
@@ -160,7 +169,7 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 						value={totalSumOfOrders} /><br />
 				</form></div> :
 				<div className="text-center">
-					<h3>Shipping started!</h3>
+					<h3>Shipping has started!</h3>
 				</div>				
 		}
 		

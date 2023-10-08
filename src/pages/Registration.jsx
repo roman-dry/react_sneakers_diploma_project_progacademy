@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-
-import styles from './Orders/Orders.module.scss';
 import { useForm, Controller } from 'react-hook-form';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import axios from 'axios';
@@ -8,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 import 'react-phone-number-input/style.css';
 import stylesReg from './Registration.module.scss';
+import styles from './Orders/Orders.module.scss';
 
 function Registration({ url }) {
 	const { register,

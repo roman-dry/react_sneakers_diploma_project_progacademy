@@ -8,6 +8,7 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUse
 	const navigate = useNavigate();
     const sumOfOrders = cardCart.reduce((acc, card) => {
 		return acc + Number(card.totalPrice)}, 0);
+	const visiblePromotionSum = sumOfOrders >= 1000 ? sumOfOrders.toFixed(2) : (sumOfOrders * 1.05).toFixed(2);
 
 	function getLogout() {
 		setIsLoginTrue(false)
@@ -43,8 +44,8 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUse
 			<ul className="d-flex list-unstyled" role='button'>
 				<li>
 					<div className="d-flex" onClick={onClickCart}>
-						<img width="20px" src="img/cart2.svg" alt="cart" />
-						<span className="ml-4">${sumOfOrders ? (sumOfOrders * 1.05).toFixed(2) : 0}</span>
+						<img className="imgCart" width="20px" src="img/cart2.svg" alt="cart" />
+						<span className="ml-4">${sumOfOrders ? visiblePromotionSum : 0}</span>
 					</div>
 					
 				</li>
@@ -58,6 +59,7 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUse
 					<option value="/">Info</option>
 					<option value="/orders">My orders</option>
 					<option value="/shipping">My shipping</option>
+					<option value="/user">Edit profile</option>
 				</select>
 
 			</ul>	

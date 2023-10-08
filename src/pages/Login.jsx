@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 
@@ -9,22 +9,35 @@ function Login({ setUserViewName, isLoginTrue, setIsLoginTrue, setUser, setCardC
 			
 	const [isWrongPass, setIsWrongPass] = useState("");
 	const { register, handleSubmit } = useForm();
+	const navigate = useNavigate();
 
 	async function onSubmit(obj) {
 		const { data } = await axios.post(`${url}login`, obj);
-		if(data.email === obj.email && data.password === obj.password) {
-			const userId = Number(data.id);
-			const cartResponse = await axios.get(`${url}cart?user_id=${userId}`);
-			const favoriteResponse = await axios.get(`${url}favorite?user_id=${userId}`);
-			setCardCart(cartResponse.data);
-			setFavorites(favoriteResponse.data);
+		if(data.email === obj.email && data.password === obj.password && data.role === "ADMIN") {
 			setUserViewName(data.name);
 			setIsLoginTrue(true);
 			setIsWrongPass("");
 			setUser(data);
+
+			return navigate('/admin')
+
 		} else {
-			setIsWrongPass("Wrong login or password!")
+			if(data.email === obj.email && data.password === obj.password && data.role === "USER") {
+				const userId = Number(data.id);
+				const cartResponse = await axios.get(`${url}cart?user_id=${userId}`);
+				const favoriteResponse = await axios.get(`${url}favorite?user_id=${userId}`);
+				setCardCart(cartResponse.data);
+				setFavorites(favoriteResponse.data);
+				setUserViewName(data.name);
+				setIsLoginTrue(true);
+				setIsWrongPass("");
+				setUser(data);
+			} else {
+				setIsWrongPass("Wrong login or password!")
+			}
+
 		}
+		
 	}
 		
 	return (

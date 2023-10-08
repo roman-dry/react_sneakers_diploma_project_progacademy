@@ -1,0 +1,105 @@
+import React, { useState, useEffect } from "react";
+import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+
+import styles from './Orders/Orders.module.scss';
+
+function Admin({ url, user }) {
+    const { register, handleSubmit} = useForm();
+    const [cardId, setCardId] = useState(0);
+    const [allItems, setAllItems] = useState([]);
+    const [isRequestItems, setIsRequestItems] = useState(false)
+    const [isAdded, setIsAdded] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        async function getLastId() {
+            try {
+                const { data } = await axios.get(url); 
+                if(data.length) {
+                    const lastItem = data[data.length - 1];
+                    setCardId(lastItem.last_id);
+                    setAllItems(data);
+                } else {
+                    setCardId(0);
+                }
+                           
+            } catch (error) {
+                alert('Failed to get an id of last item');
+            }
+        }
+
+        getLastId();        
+    }, [])
+
+    async function onSubmit(obj) {	
+        if(user.role === "ADMIN") {
+            try {
+                await axios.post(`${url}`, obj);
+                setIsAdded(true);
+                window.location.reload();
+            } catch (error) {
+                alert('Failed to add card to data base');
+            }
+
+        } else {
+            setIsAdmin(true);
+        }     
+					
+	}
+
+    function getListOfItems() {
+        if(isRequestItems) {
+            setIsRequestItems(false);
+        } else {
+            setIsRequestItems(true);
+        }
+    }
+   
+    return (
+        <div className="m-5 pb-3">
+            <h3 className="mb-2">FORM TO ADD A NEW ITEM</h3>
+            <h4>Last item's ID is <span style={{color: 'red'}}>{cardId}</span></h4>            
+            <form className='mt-3' onSubmit={handleSubmit(onSubmit)}>
+				<input className={styles.formWidth} {...register('parent_id', { required: true })} 
+                    name="parent_id" placeholder="Enter parentId" /><br />
+				<input className={styles.formWidth} {...register('title', { required: true })} 
+                    name="title" placeholder="Title" /><br />				
+				<input className={styles.formWidth} {...register('price', { required: true })} 
+                    name="price" placeholder="Enter price" /><br />
+                <input className={styles.formWidth} {...register('imageURL', { required: true })} 
+                    name="imageURL" placeholder="Enter imageURL" /><br />	
+                <input className={styles.formWidth} {...register('count', { required: true })} 
+                    name="count" value="1" /><br />	
+                <input className={styles.formWidth} {...register('totalPrice', { required: true })} 
+                    name="totalPrice" placeholder="Enter totalPrice" /><br />
+                <input className={styles.formWidth} {...register('last_id', { required: true })} 
+                    name="last_id" placeholder="Last id + 1" /><br />		
+				<button type="submit" className={styles.submitBtn}>Submit</button> 
+                <button type="reset" style={{background: 'blue'}} className={styles.submitBtn}>Reset</button> 
+			</form>
+            {isAdded ? <span style={{color: 'green'}}>You successfully added item # <span style={{color: 'red'}}>{cardId + 1}</span> </span> : ''}
+            {isAdmin ? <span style={{color: 'red'}}>You have not root to add an item!</span> : ''}
+
+            <h5 className='mt-3' style={{color: 'blue', cursor: 'pointer'}} onClick={getListOfItems}>Get all Items</h5>
+            {isRequestItems && (user.role === 'ADMIN') ? <table border='2'><thead><tr><th>ID</th><th>Title</th><th>Price</th><th>ImageURL</th>
+                <th>Count</th><th>parentId</th><th>totalSum</th><th>lastId</th></tr></thead><tbody>{
+                    allItems.map(item => {
+                        return <tr key={item.id}><td>{item.id}</td>
+                        <td>{item.title}</td>
+                        <td>{item.price}</td>
+                        <td>{item.imageURL}</td>
+                        <td>{item.count}</td>
+                        <td>{item.parent_id}</td>
+                        <td>{item.totalSum}</td>
+                        <td>{item.last_id}</td></tr>
+                    })}</tbody></table> : ''}
+            <h5 className='mt-3'><Link to='/edit'>Follow the link if you want to EDIT item</Link></h5>
+            <h5 className='mt-3'><Link to='/remove'>Follow the link if you want to REMOVE item</Link></h5>
+
+        </div>
+    )
+}
+
+export default Admin;

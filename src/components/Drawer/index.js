@@ -18,15 +18,25 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 
 	async function onClickOrder() {	
 			let orderDescription = 	cardCart.reduce((acc, card) => {
-				return acc + card.title + " " + card.count + "; "
+				let cardCountWord;
+				if(card.count === 1) {
+					cardCountWord = 'pair'
+				} else {
+					cardCountWord = 'pairs'
+				}
+				return acc + card.title + " - " + card.count + " " + cardCountWord + "  "
 				
 				}, "")
 			const newOrder = {
 				"user_id": user.id,
 				"status": "inactive",
 				"orderDescription": orderDescription,
-				"totalSum": sumOfOrders * 1.05
+				"totalSum": sumOfOrders >= 1000 ? sumOfOrders : sumOfOrders * 1.05
 			};
+
+			async function removeUsersCart() {
+				await axios.delete(`${url}cart?user_id=${user.id}`);
+			}
 
 			try {
 			
@@ -34,13 +44,12 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 				setOrderId(data.id)
 				setIsOrderCompleted(true);
 				setCardCart([]);
-				await axios.delete(`${url}cart?user_id=${user.id}`)
+				removeUsersCart();				
 	
 			} catch (error) {
 				alert('Failed to create an order!')
 	
-			}				
-
+			}	
 	}		
 
 	async function onCountPlus(card) {		
@@ -77,15 +86,12 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 					}
 				}
 				return item;
-			}));
-				
-			
+			}));			
 			
 		} catch (error) {
 			alert('Failed Put-request')
 			
-		}
-		
+		}		
 
 	}
 
@@ -143,7 +149,7 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 		<div className={styles.drawer}>
 			<div className="d-flex justify-content-between align-items-center mb-4">
 				<div>
-					<h4><ins>LuChoice Cart</ins></h4>
+					<h4 style={{color: 'blue'}}>LuChoice Cart</h4>
 				</div>
 				<button className={`${styles.closeBtn} + ' mb-1'`} onClick={onClickCloseCart} >
 					<img className={styles.rotatePlus} width="10px" src="img/plus_button.svg" alt="plus-button" />
@@ -161,7 +167,7 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 										<span>PRICE: </span>
 										<b>${card.price}</b>
 									</div>
-									<button onClick={() => onClickMinus(card.id)} className="removeBtn">
+									<button onClick={() => onClickMinus(card.parent_id)} className="removeBtn">
 										<img className="rotate-plus" width="10px" src="img/plus_button.svg" alt="plus-button" />
 									</button>
 								</div>
@@ -179,12 +185,12 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 						<li className="d-flex align-items-end">
 							<span>Total including fee: </span>
 							<div></div>
-							<b> ${(sumOfOrders * 1.05).toFixed(2)}</b>
+							<b> ${sumOfOrders >= 1000 ? sumOfOrders : (sumOfOrders * 1.05).toFixed(2)}</b>
 						</li>
 						<li className="d-flex align-items-end">
 							<span>Fee 5%: </span>
 							<div></div>
-							<b> ${(sumOfOrders / 20).toFixed(2)}</b>
+							<b> ${sumOfOrders >= 1000 ? 0 : (sumOfOrders / 20).toFixed(2)}</b>
 						</li>
 					</ul>
 					<div className="text-center">
