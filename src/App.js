@@ -31,8 +31,8 @@ function App() {
 	const [totalSumDescription, setTotalSumDescription] = useState("");
 	const [orders, setOrders] = useState([]);
 	const navigate = useNavigate();
-	//const url = 'https://diploma-project-w89i.onrender.com/';
-	const url = 'http://localhost:8080/';
+	const url = 'https://diploma-project-w89i.onrender.com/';
+	//const url = 'http://localhost:8080/';
 
 	useEffect(() => {
 		
