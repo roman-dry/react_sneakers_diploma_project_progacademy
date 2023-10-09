@@ -198,7 +198,8 @@ function App() {
 					isLoginTrue={isLoginTrue}
 					setIsLoginTrue={setIsLoginTrue}
 					setUser={setUser}
-					setCardCart={setCardCart} />				
+					setCardCart={setCardCart}
+					user={user} />				
 
 					<Routes>
 						< Route path="/" element={<Home

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 
-function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUser, setCardCart} ) {
+function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, user, setUser, setCardCart} ) {
 
 	const { cardCart } = useContext(AppContext);
 	const navigate = useNavigate();
@@ -59,7 +59,7 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, setUse
 					<option value="/">Info</option>
 					<option value="/orders">My orders</option>
 					<option value="/shipping">My shipping</option>
-					<option value="/user">Edit profile</option>
+					{user.role === 'ADMIN' ? <option value="/admin">Add product</option> : <option value="/user">Edit profile</option> }
 				</select>
 
 			</ul>	
