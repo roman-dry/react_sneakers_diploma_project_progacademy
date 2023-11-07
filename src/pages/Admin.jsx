@@ -68,7 +68,6 @@ function Admin({ url, user }) {
         <div className="m-5 pb-3">
             <h3 className="mb-2">FORM TO ADD A NEW ITEM</h3>
             <form className='mt-3' onSubmit={handleSubmit(onSubmit)}>
-                    name="parent_id" placeholder="Enter parentId" /><br /> */}
 				<input className={styles.formWidth} {...register('title', { required: true })} 
                     name="title" placeholder="Title" /><br />				
 				<input className={styles.formWidth} {...register('price', { required: true })} 
