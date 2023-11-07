@@ -12,24 +12,16 @@ function AdminEdit({ url, user }) {
     const [cardId, setCardId] = useState(0);
     const [isEdited, setIsEdited] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [inputValueId, setInputValueId] = useState('');
-    const [inputValueParentId, setInputValueParentId] = useState('');
     const [inputValueTitle, setInputValueTitle] = useState('');
     const [inputValuePrice, setInputValuePrice] = useState('');
     const [inputValueImageUrl, setInputValueImageUrl] = useState('');
-    const [inputValueCount, setInputValueCount] = useState('');
-    const [inputValueTotalPrice, setInputValueTotalPrice] = useState('');
 
     async function getItemById(id) {
         try {
             const { data } = await axios.get(`${url}${id}`);
-            setInputValueParentId(data.parent_id);
             setInputValueTitle(data.title);
             setInputValuePrice(data.price);
             setInputValueImageUrl(data.imageURL);
-            setInputValueCount(data.count);
-            setInputValueTotalPrice(data.totalPrice);
-
         } catch {
             alert('Error get item by ID')
         }
@@ -40,14 +32,6 @@ function AdminEdit({ url, user }) {
         setCardId(obj.currentId);
         getItemById(obj.currentId);
         setIsEdited(false);
-    }
-
-    function handleChangeId(e) {
-        setInputValueId(e.target.value);
-    }
-
-    function handleChangeParentId(e) {
-        setInputValueParentId(e.target.value);
     }
 
     function handleChangeTitle(e) {
@@ -62,20 +46,22 @@ function AdminEdit({ url, user }) {
         setInputValueImageUrl(e.target.value);
     }
 
-    function handleChangeCount(e) {
-        setInputValueCount(e.target.value);
-    }
+    async function onSubmitEdit(obj) {
+        const objEdit = {
+            "id": cardId,
+            "title": obj.title,
+            "price": obj.price,
+            "imageURL": obj.imageURL,
+            "count": 1,
+            "totalPrice": obj.price,
+            "parent_id": cardId
 
-    function handleChangeTotalPrice(e) {
-        setInputValueTotalPrice(e.target.value);
-    }
-
-    async function onSubmitEdit(obj) {	
+        }	
         if(user.role === "ADMIN") {
             try {
-                await axios.patch(`${url}?id=${obj.id}&title=${obj.title}&price=${obj.price}&imageURL=${obj.imageURL}&count=${obj.count}&totalPrice=${obj.totalPrice}&parent_id=${obj.parent_id}`);
+                await axios.patch(`${url}?id=${objEdit.id}&title=${objEdit.title}&price=${objEdit.price}&imageURL=${objEdit.imageURL}&count=${objEdit.count}&totalPrice=${objEdit.totalPrice}&parent_id=${objEdit.parent_id}`);
                 setIsEdited(true);
-                setCardId(obj.id);
+                setCardId(objEdit.id);
             } catch (error) {
                 alert('Failed to edit card in data base');
             }	
@@ -103,20 +89,12 @@ function AdminEdit({ url, user }) {
             </div>
             
             <form className='mt-5' onSubmit={handleSubmitSecondForm(onSubmitEdit)}>
-                <label>Default ID<br /><input className={styles.formWidthEdit} {...registerSecondField('id')} 
-                    name="id" placeholder="ID" value={inputValueId} onChange={handleChangeId} /></label><br />
-				<label>Edit parent_id<br /><input className={styles.formWidthEdit} {...registerSecondField('parent_id')} 
-                    name="parent_id" value={inputValueParentId} onChange={handleChangeParentId} /></label><br />
 				<label>Edit title<br /><input className={styles.formWidthEdit} {...registerSecondField('title')} 
                     name="title" value={inputValueTitle} onChange={handleChangeTitle} /></label><br />				
 				<label>Edit price<br /><input className={styles.formWidthEdit} {...registerSecondField('price')} 
                     name="price" value={inputValuePrice} onChange={handleChangePrice} /></label><br />
                 <label>Edit imageURL<br /><input className={styles.formWidthEdit} {...registerSecondField('imageURL')} 
                     name="imageURL" value={inputValueImageUrl} onChange={handleChangeImageUrl} /></label><br />	
-                <label>Edit count<br /><input className={styles.formWidthEdit} {...registerSecondField('count')} 
-                name="count" value={inputValueCount} onChange={handleChangeCount} /></label><br />	
-                <label>Edit totalPrice<br /><input className={styles.formWidthEdit} {...registerSecondField('totalPrice')} 
-                    name="totalPrice" value={inputValueTotalPrice} onChange={handleChangeTotalPrice} /></label><br />		
 				<button type="submit" className={styles.submitBtn}>Submit</button> 
                 <button type="reset" style={{background: 'blue'}} className={styles.submitBtn}>Reset</button> 
 			</form>
