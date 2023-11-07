@@ -45,7 +45,6 @@ function Admin({ url, user }) {
                 await axios.patch(`${url}?id=${data.id}&title=${data.title}&price=${data.price}&imageURL=${data.imageURL}&count=${data.count}&totalPrice=${data.price}&parent_id=${data.id}`);
                 setCardId(data.id)
                 setIsAdded(true);
-                window.location.reload();
             } catch (error) {
                 alert('Failed to add card to data base');
             }
