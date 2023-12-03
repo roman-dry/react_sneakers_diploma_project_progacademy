@@ -30,8 +30,8 @@ function App() {
 	const currentUser = useSelector((state) => state.userReducer.user);
 	const token = useSelector((state) => state.tokenReducer.item.access_token);
 	const navigate = useNavigate();
-	//const url = 'https://diploma-project-w89i.onrender.com/';
-	const url = 'http://localhost:8080/';
+	const url = 'https://diploma-project-w89i.onrender.com/';
+	//const url = 'http://localhost:8080/';
 
 	useEffect(() => {
 		
