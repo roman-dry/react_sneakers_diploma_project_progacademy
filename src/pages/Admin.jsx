@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from 'react-hook-form';
+import { useSelector } from "react-redux";
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 import styles from './Orders/Orders.module.scss';
 
-function Admin({ url, user }) {
+function Admin({ url, currentUser }) {
     const { register, handleSubmit} = useForm();
     const [cardId, setCardId] = useState(0);
     const [allItems, setAllItems] = useState([]);
     const [isRequestItems, setIsRequestItems] = useState(false)
     const [isAdded, setIsAdded] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const token = useSelector((state) => state.tokenReducer.item.access_token);
 
     useEffect(() => {
         async function getAllCards() {
@@ -25,8 +27,8 @@ function Admin({ url, user }) {
                 alert('Failed to get an id of last item');
             }
         }
+        getAllCards(); 
 
-        getAllCards();        
     }, [])
 
     async function onSubmit(obj) {	
@@ -38,11 +40,19 @@ function Admin({ url, user }) {
             "totalPrice": obj.price,
             "parent_id": ""
         }
-        if(user.role === "ADMIN") {
+        if(currentUser.role === "ADMIN") {
             try {
-                const { data } = await axios.post(`${url}`, objCreate);
-                console.log(data);
-                await axios.patch(`${url}?id=${data.id}&title=${data.title}&price=${data.price}&imageURL=${data.imageURL}&count=${data.count}&totalPrice=${data.price}&parent_id=${data.id}`);
+                const { data } = await axios.post(`${url}`, JSON.stringify(objCreate),
+                {headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json'
+                 }          
+                });
+                await axios.patch(`${url}?id=${data.id}&title=${data.title}&price=${data.price}&imageURL=${data.imageURL}&count=${data.count}&totalPrice=${data.price}&parent_id=${data.id}`,
+                {headers: {
+                     Authorization: `Bearer ${token}`
+                 }          
+                });
                 setCardId(data.id)
                 setIsAdded(true);
             } catch (error) {
@@ -80,7 +90,7 @@ function Admin({ url, user }) {
             {isAdmin ? <span style={{color: 'red'}}>You have not root to add an item!</span> : ''}
 
             <h5 className='mt-3' style={{color: 'blue', cursor: 'pointer'}} onClick={getListOfItems}>Get all Items</h5>
-            {isRequestItems && (user.role === 'ADMIN') ? <table border='2'><thead><tr><th>ID</th><th>Title</th><th>Price</th>
+            {isRequestItems && (currentUser.role === 'ADMIN') ? <table border='2'><thead><tr><th>ID</th><th>Title</th><th>Price</th>
                 <th>ImageURL</th></tr></thead><tbody>{
                     allItems.map(item => {
                         return <tr key={item.id}><td>{item.id}</td>

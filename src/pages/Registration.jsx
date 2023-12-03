@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { jwtDecode } from "jwt-decode";
+import { setTokenItem } from '../redux/slices/tokenSlice';
+import { setUser } from "../redux/slices/userSlice";
 
 import 'react-phone-number-input/style.css';
 import stylesReg from './Registration.module.scss';
@@ -11,31 +15,47 @@ import styles from './Orders/Orders.module.scss';
 function Registration({ url }) {
 	const { register,
 			handleSubmit,
-			reset,
 			formState: { errors },
 			control } = useForm({
 							mode: "onBlur"
 						});
-	const [isSubmited, setIsSubmited] = useState(true)
 	const [isFreeLogin, setisFreelogin] = useState("");
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
 
-	async function onSubmit(obj) {
-		const { data } = await axios.get(`${url}login?email=${obj.email}`);
-		if(obj.email === data.email) {
-			setisFreelogin("User with this email already exists");
-		} else {
-			await axios.post(`${url}registration`, obj);
-			setIsSubmited(false);
-		}
-		reset();
+	async function onSubmit(user) {
+		try {
+		const response = await axios.post(`${url}api/auth/register`, JSON.stringify(user), {headers: { 'Content-Type': 'application/json' }});
+		const data = response.data;
+		dispatch(
+			setTokenItem({
+			userId: data.userId,
+			access_token: data.access_token,
+			exp: jwtDecode(data.access_token).exp,
+			})
+		);
+		const responseUser = await axios.get(`${url}user/${data.userId}`, {
+			headers: { Authorization: `Bearer ${data.access_token}` },
+		});
+		const dataUser = responseUser.data;
+		dispatch(setUser(dataUser));
+		navigate('/');
+			
+		} catch (err) {
+			if (!err?.response) {
+				setisFreelogin('No Server Response');
+			  } else if (err.response?.status === 409) {
+				setisFreelogin('Username Taken');
+			  } else {
+				setisFreelogin('Registration Failed');
+			  }			
+		}		
 	}
 
 	return (
 		<div className='text-center pb-4'>
 			<h4 className="mt-4">Registration</h4>
-
-			{
-				isSubmited ? <form className="mt-3" onSubmit={handleSubmit(onSubmit)}>
+			<form className="mt-3" onSubmit={handleSubmit(onSubmit)}>
 				<span style={{color: 'red'}}>{isFreeLogin}</span><br />
 				<input {...register('name', { required: true, pattern: /^[A-Za-z]+$/i })} 
 					name="name" placeholder="Name" /><br />
@@ -75,13 +95,7 @@ function Registration({ url }) {
 						<p className={stylesReg.colorError} >Password is too short!</p>
 				)}
 				<button type="submit" className={styles.submitBtn}>Submit</button> 
-			</form> :
-				<>
-					<h3>Thank you for registration!</h3>
-					<h3>Please, <Link to="/login">Login</Link></h3>
-				</>				
-			}
-
+			</form>
 		</div>
 	)
 }

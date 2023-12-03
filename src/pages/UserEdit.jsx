@@ -1,17 +1,20 @@
 import React, { useState } from "react";
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import { useSelector } from "react-redux";
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import axios from 'axios';
 
 import styles from './Orders/Orders.module.scss';
+import stylesReg from './Registration.module.scss';
 
-function UserEdit({ url, user, isLoginTrue }) {
-    const { register, handleSubmit } = useForm();
+function UserEdit({ url, currentUser }) {
+    const { register, handleSubmit, formState: { errors }, control } = useForm();
+    const token = useSelector((state) => state.tokenReducer.item.access_token);
     const [isUser, setIsUser] = useState(false);
     const [isEdited, setIsEdited] = useState(false);
-    const [inputValueName, setInputValueName] = useState(user.name);
-    const [inputValueEmail, setInputValueEmail] = useState(user.email);
-    const [inputValuePhone, setInputValuePhone] = useState(user.phone);
-    const [inputValuePassword, setInputValuePassword] = useState(user.password);
+    const [inputValueName, setInputValueName] = useState(currentUser.name);
+    const [inputValueEmail, setInputValueEmail] = useState(currentUser.email);
+    const [inputValuePassword, setInputValuePassword] = useState('');
 
 
     function handleChangeName(e) {
@@ -22,18 +25,24 @@ function UserEdit({ url, user, isLoginTrue }) {
         setInputValueEmail(e.target.value);
     }
 
-    function handleChangePhone(e) {
-        setInputValuePhone(e.target.value);
-    }
-
     function handleChangePassword(e) {
         setInputValuePassword(e.target.value);
     }
 
     async function onSubmitEdit(obj) {
-        if(isLoginTrue) {
+        let name = obj.name;
+        let email = obj.email;
+        let phone = obj.phone;
+        let password = obj.password;
+        
+        if(currentUser.name) {
             try {
-                await axios.patch(`${url}user?id=${user.id}&name=${obj.name}&email=${obj.email}&phone=${obj.phone}&password=${obj.password}`);
+                await axios.patch(`${url}user/edit?id=${currentUser.id}&name=${name}&email=${email}&phone=${phone}&password=${password}`, JSON.stringify({}),
+                {headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json'
+                 }          
+                });
                 setIsEdited(true);
             } catch (error) {
                 alert('Failed to edit the profile');
@@ -51,14 +60,41 @@ function UserEdit({ url, user, isLoginTrue }) {
             
             <form className='mt-5' onSubmit={handleSubmit(onSubmitEdit)}>
                 
-				<label>Edit name<br /><input className={styles.formWidthEdit} {...register('name')} 
+				<label>Edit name<br /><input className={styles.formWidthEdit} {...register('name', { required: true, pattern: /^[A-Za-z]+$/i })} 
                     name="name" value={inputValueName} onChange={handleChangeName} /></label><br />				
-				<label>Edit email<br /><input className={styles.formWidthEdit} {...register('email')} 
+				<label>Edit email<br /><input className={styles.formWidthEdit} {...register('email', { required: true, pattern: {
+						value: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+					} })} 
                     name="email" value={inputValueEmail} onChange={handleChangeEmail} /></label><br />
-                <label>Edit phone<br /><input className={styles.formWidthEdit} {...register('phone')} 
-                    name="phone" value={inputValuePhone} onChange={handleChangePhone} /></label><br />	
-                <label>Edit password<br /><input type="password" className={styles.formWidthEdit} {...register('password')} 
-                    name="password" value={inputValuePassword} onChange={handleChangePassword} /></label><br />	
+                    {errors["email"] && (
+						<p className={stylesReg.colorError} >Invalid email address!</p>
+				)}
+                <label>Edit phone<br /><div className={stylesReg.phoneController}>
+					<Controller
+					name="phone"
+					control={control}
+					rules={{
+						validate: (value) => isValidPhoneNumber(value)
+					  }}
+					render={({ field: { onChange, value } }) => (
+						<PhoneInput
+							placeholder="Phone"
+							value={value}
+							onChange={onChange}
+							defaultCountry="UA"
+							id="phone"
+						/>
+					)}
+					/>
+					{errors["phone"] && (
+						<p className={stylesReg.colorError} >Invalid Phone!</p>
+					)}
+				</div></label><br />	
+                <label>Edit password<br /><input type="password" className={styles.formWidthEdit} {...register('password', { required: true, minLength: 6 })} 
+                    name="password" value={inputValuePassword} onChange={handleChangePassword} /></label><br />
+                {errors["password"] && (
+						<p className={stylesReg.colorError} >Password is too short!</p>
+				)}	
                 		
 				<button type="submit" className={styles.submitBtn}>Submit</button> 
                 <button type="reset" style={{background: 'blue'}} className={styles.submitBtn}>Reset</button> 

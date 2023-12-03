@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
+import { useSelector } from "react-redux";
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import axios from "axios";
 
@@ -8,11 +9,12 @@ import styles from './Orders/Orders.module.scss';
 import 'react-phone-number-input/style.css';
 import stylesReg from './Registration.module.scss';
 
-function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDescription, url }) {
+function Shipping({ totalSumOfOrders, currentUser, setOrders, totalSumDescription, url }) {
 	const [shippings, setShippings] = useState([]);
 	const [isSubmited, setIsSubmited] = useState(true);
 	const [countries, setCountries] = useState([]);
 	const navigate = useNavigate();
+	const token = useSelector((state) => state.tokenReducer.item.access_token);
 	const { register,
 		handleSubmit,
 		reset,
@@ -24,19 +26,19 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 	useEffect(() => {
 		
 		async function getShipping() {
-			if(isLoginTrue) {
+			if(currentUser.name) {
 				try {
-					const { data } = await axios.get(`${url}shippings/${user.id}`);
+					const { data } = await axios.get(`${url}shippings/${currentUser.id}`, {
+						headers: { Authorization: `Bearer ${token}` },
+					  });
 					setShippings(data);					
 				} catch (error) {
 					alert('Failed to get Shipping!')					
 				}				
 			} else {
 				return navigate('/login')
-			};			
-			
-		}
-	
+			}			
+		}	
 		getShipping();		
 
 	}, [])
@@ -49,20 +51,30 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 	async function onRemoveShipping(id) {
 		
 		try {
-			await axios.delete(`${url}shippings/${id}`);
-			setShippings((prev) => prev.filter((shipping) => Number(shipping.id) !== Number(id)));
+			await axios.delete(`${url}shippings/${id}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			setShippings((prev) => prev.filter((shipping) => shipping.id !== id));
 
 		} catch (error) {
-			alert('Failed to remove from Shippings!')
-
-		}
-		
+			alert('Failed to remove from Shippings!');
+		}		
 	}
 
 	async function onSubmit(data) {
-		await axios.post(`${url}shippings`, data);
+		await axios.post(`${url}shippings`, JSON.stringify(data),
+		{headers: {
+			 Authorization: `Bearer ${token}`,
+			 'Content-Type': 'application/json'
+		 }          
+		});
 		setIsSubmited(false);
-		await axios.patch(`${url}orders?user_id=${user.id}&status=active`);
+		await axios.patch(`${url}orders?user_id=${currentUser.id}&status=active`, JSON.stringify({}),
+		{headers: {
+			 Authorization: `Bearer ${token}`,
+			 'Content-Type': 'application/json'
+		 }          
+		});
 		setOrders([]);
 		reset();
 	}		
@@ -85,8 +97,8 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 						<li>Comment: {shipping.size}</li>
 						<li>Sneakers: </li>
 						{
-							listOfShippingDesc.map(item => {
-								return <ul className="mt-2">
+							listOfShippingDesc.map((item, index) => {
+								return <ul key={index} className="mt-2">
 									<li style={{listStyleType: 'none'}}>{item}</li>
 								</ul>
 							})
@@ -164,7 +176,7 @@ function Shipping({ user, totalSumOfOrders,	isLoginTrue, setOrders, totalSumDesc
 					<input {...register('totalDesc', { required: true })} className="mt-3" name="totalDesc" type="hidden" 
 						value={totalSumDescription} /><br />								
 					<button type="submit" className={styles.submitBtn}>Submit</button> 
-					<input {...register('user_id', { required: true })} className="mt-3" name="user_id" type="hidden" value={user.id} /><br />
+					<input {...register('user_id', { required: true })} className="mt-3" name="user_id" type="hidden" value={currentUser.id} /><br />
 					<input {...register('total_sum', { required: true })} className="mt-3" name="total_sum" type="hidden" 
 						value={totalSumOfOrders} /><br />
 				</form></div> :

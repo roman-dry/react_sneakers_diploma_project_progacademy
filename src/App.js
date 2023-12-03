@@ -13,7 +13,7 @@ import Admin from "./pages/Admin";
 import AdminEdit from "./pages/AdminEdit";
 import AdminDelete from "./pages/AdminDelete";
 import UserEdit from "./pages/UserEdit";
-
+import { useSelector } from "react-redux";
 export const AppContext = createContext({});
 
 function App() {
@@ -24,15 +24,14 @@ function App() {
 	const [searchValue, setSearchValue] = useState('');
 	const [favorites, setFavorites] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [userViewName, setUserViewName] = useState('');
-	const [isLoginTrue, setIsLoginTrue] = useState(false);
-	const [user, setUser] = useState({});
 	const [totalSumOfOrders, setTotalSumOfOrders] = useState(0);
 	const [totalSumDescription, setTotalSumDescription] = useState("");
 	const [orders, setOrders] = useState([]);
+	const currentUser = useSelector((state) => state.userReducer.user);
+	const token = useSelector((state) => state.tokenReducer.item.access_token);
 	const navigate = useNavigate();
-	const url = 'https://diploma-project-w89i.onrender.com/';
-	//const url = 'http://localhost:8080/';
+	//const url = 'https://diploma-project-w89i.onrender.com/';
+	const url = 'http://localhost:8080/';
 
 	useEffect(() => {
 		
@@ -44,6 +43,16 @@ function App() {
 				const cardsResponse = await axios.get(url);
 				setIsLoading(false);
 				setCards(cardsResponse.data);
+				if (currentUser.role === 'USER') {
+					const cartResponse = await axios.get(`${url}cart?user_id=${currentUser.id}`, {
+						headers: { Authorization: `Bearer ${token}` },
+					  });
+					const favoriteResponse = await axios.get(`${url}favorite?user_id=${currentUser.id}`, {
+						headers: { Authorization: `Bearer ${token}` },
+					  });
+					setCardCart(cartResponse.data);
+					setFavorites(favoriteResponse.data);
+				}
 
 			} catch (error) {
 				alert('Error requesting data')
@@ -57,7 +66,7 @@ function App() {
 	
 	async function addToCart(card) {
 
-		if(isLoginTrue) {
+		if(currentUser.name) {
 			try {
 				const cart = {
 					"title": card.title,
@@ -66,16 +75,25 @@ function App() {
 					"count": 1,
 					"totalPrice": card.price,
 					"parent_id": card.parent_id,
-					"user_id": user.id
+					"user_id": currentUser.id
 				}
 	
-				const findCart = cardCart.find((item) => Number(item.parent_id) === Number(card.parent_id));
+				const findCart = cardCart.find((item) => item.parent_id === card.parent_id);
 				if (findCart) {
-					setCardCart((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.parent_id)))
-					await axios.delete(`${url}carted?user_id=${user.id}&parent_id=${findCart.parent_id}`);
+					setCardCart((prev) => prev.filter((itemCard) => itemCard.parent_id !== card.parent_id))
+					await axios.delete(`${url}carted?user_id=${currentUser.id}&parent_id=${findCart.parent_id}`,
+					{headers: {
+						 Authorization: `Bearer ${token}`
+					 }          
+					});
 				} else {
 					
-					const { data } = await axios.post(`${url}cart`, cart);
+					const { data } = await axios.post(`${url}cart`, JSON.stringify(cart),
+					{headers: {
+						 Authorization: `Bearer ${token}`,
+						 'Content-Type': 'application/json'
+					 }          
+					});
 					setCardCart(prev => [...prev, cart]);
 					setCardCart((prev) => prev.map(cart => {
 						if (cart.parent_id === data.parent_id) {
@@ -102,8 +120,12 @@ function App() {
 	async function onClickMinus(id) {
 
 		try {
-			await axios.delete(`${url}cart?user_id=${user.id}&parent_id=${id}`);
-			setCardCart(prev => prev.filter(card => Number(card.parent_id) !== Number(id)));
+			await axios.delete(`${url}cart?user_id=${currentUser.id}&parent_id=${id}`,
+			{headers: {
+				 Authorization: `Bearer ${token}`
+			 }          
+			});
+			setCardCart(prev => prev.filter(card => card.parent_id !== id));
 		} catch (error) {
 			alert('Failed to remove from cart');
 		}
@@ -111,7 +133,7 @@ function App() {
 
 	async function addToFavorites(card) {
 
-		if(isLoginTrue) {
+		if(currentUser.name) {
 			try {
 				const cardFav = {
 					"title": card.title,
@@ -120,16 +142,25 @@ function App() {
 					"count": 1,
 					"totalPrice": card.price,
 					"parent_id": card.parent_id,
-					"user_id": user.id
+					"user_id": currentUser.id
 				}
 	
-				const findCart = favorites.find((item) => Number(item.parent_id) === Number(card.parent_id));
+				const findCart = favorites.find((item) => item.parent_id === card.parent_id);
 				if (findCart) {
-					setFavorites((prev) => prev.filter((itemCard) => Number(itemCard.parent_id) !== Number(card.parent_id)))
-					await axios.delete(`${url}favorite/${findCart.parent_id}`);
+					setFavorites((prev) => prev.filter((itemCard) => itemCard.parent_id !== card.parent_id))
+					await axios.delete(`${url}favorite/${findCart.parent_id}`,
+					{headers: {
+						 Authorization: `Bearer ${token}`
+					 }          
+					});
 				} else {
 					
-					const { data } = await axios.post(`${url}favorite`, cardFav);
+					const { data } = await axios.post(`${url}favorite`, JSON.stringify(cardFav),
+					{headers: {
+						 Authorization: `Bearer ${token}`,
+						 'Content-Type': 'application/json'
+					 }          
+					});
 					setFavorites(prev => [...prev, data]);
 										
 				}
@@ -147,13 +178,17 @@ function App() {
 	async function removeFromFavorites(id) {
 		let idFav = null;
 		favorites.map(card => {
-			if(card.user_id === user.id && card.parent_id === id) {
+			if(card.user_id === currentUser.id && card.parent_id === id) {
 				idFav = card.parent_id;
 			}
 			return card
 		})
 		try {
-			await axios.delete(`${url}favorite/${idFav}`);
+			await axios.delete(`${url}favorite/${idFav}`,
+			{headers: {
+				 Authorization: `Bearer ${token}`
+			 }          
+			});
 			setFavorites(prev => prev.filter(card =>  card.parent_id !== id ))
 		} catch (error) {
 			alert('Failed to remove from Favorited')
@@ -170,18 +205,18 @@ function App() {
 	}
 
 	function isCardAdded(id) {
-		return cardCart.some(item => Number(item.parent_id) === Number(id))
+		return cardCart.some(item => item.parent_id === id)
 	}
 
 	function isFavorited(id) {
-		return favorites.some(item => Number(item.parent_id) === Number(id))
+		return favorites.some(item => item.parent_id === id)
 	}
 
 	return (
 
-		<AppContext.Provider key={user.id} value={{
+		<AppContext.Provider key={currentUser.id} value={{
 			cards, cardCart, favorites, isCardAdded, isFavorited, setOpenDrawer,
-			setCardCart, addToCart
+			setCardCart, addToCart, currentUser, setFavorites
 		}}>
 			<div className="wrapper">
 				<Drawer
@@ -189,22 +224,18 @@ function App() {
 					cards={cardCart}
 					onClickMinus={onClickMinus}
 					opened={openDrawer}
-					user={user}
+					currentUser={currentUser}
 					url={url} />
 
 				<Header 
 					onClickCart={() => setOpenDrawer(true)}
-					userViewName={userViewName}
-					isLoginTrue={isLoginTrue}
-					setIsLoginTrue={setIsLoginTrue}
-					setUser={setUser}
 					setCardCart={setCardCart}
-					user={user} />				
+					currentUser={currentUser}
+					url={url} />				
 
 					<Routes>
 						< Route path="/" element={<Home
 							cards={cards}
-							cardCart={cardCart}
 							searchValue={searchValue}
 							onChangeInputValue={onChangeInputValue}
 							onRemoveSearch={onRemoveSearch}
@@ -223,8 +254,7 @@ function App() {
 							 />} exact />
 
 						<Route path="/orders" element={<Orders 
-							user={user}
-							isLoginTrue={isLoginTrue}
+							currentUser={currentUser}
 							setTotalSumOfOrders={setTotalSumOfOrders}
 							orders={orders}
 							setOrders={setOrders}
@@ -232,30 +262,24 @@ function App() {
 							url={url} />} exact />
 
 						<Route path="/shipping" element={ <Shipping
-							setTotalSumOfOrders={setTotalSumOfOrders}
 							totalSumOfOrders={totalSumOfOrders}
-							user={user}
-							isLoginTrue={isLoginTrue}
+							currentUser={currentUser}
 							setOrders={setOrders}
 							totalSumDescription={totalSumDescription}
-							setTotalSumDescription={setTotalSumDescription}
 							url={url}  /> } exact />
 
-						<Route path="/registration" element={ <Registration url={url}	 /> } exact />
+						<Route path="/registration" element={ <Registration url={url} /> } exact />
 
 						<Route path="/login" element={ <Login 
-							setUserViewName={setUserViewName}
-							isLoginTrue={isLoginTrue}
-							setIsLoginTrue={setIsLoginTrue}
-							setUser={setUser}
+							currentUser={currentUser}
 							setCardCart={setCardCart}
 							setFavorites={setFavorites}
 							url={url} /> } exact />
 
-						<Route path="/admin" element={ <Admin url={url} user={user} /> } exact />
-						<Route path="/edit" element={ <AdminEdit url={url} user={user} /> } exact />
-						<Route path="/remove" element={ <AdminDelete url={url} user={user} /> } exact />
-						<Route path="/user" element={ <UserEdit url={url} user={user} isLoginTrue={isLoginTrue} /> } exact />
+						<Route path="/admin" element={ <Admin url={url} currentUser={currentUser} /> } exact />
+						<Route path="/edit" element={ <AdminEdit url={url} currentUser={currentUser} /> } exact />
+						<Route path="/remove" element={ <AdminDelete url={url} currentUser={currentUser} /> } exact />
+						<Route path="/user" element={ <UserEdit url={url} currentUser={currentUser} /> } exact />
 						
 					</Routes>				
 

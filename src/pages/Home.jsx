@@ -17,15 +17,15 @@ function Home({ cards,
 	const { isFavorited } = useContext(AppContext);
 
 	function renderCards() {
-		return (isLoading ? [...Array(12)].map(card => {
+		return (isLoading ? [...Array(12)].map((card, index) => {
 			return <Card 
+				key={index}
 				loading={isLoading}  />
 		}) : cards.map((card, index) => {
 			if(card.title.toLowerCase().includes(searchValue.toLowerCase())) {
 				return <Card 
 				{...card}
 				key={index}
-				index={index}
 				onPlus={(card) => addToCart(card)}
 				onFavorite={(card) => addToFavorites(card)}
 				removeFromFavorites={removeFromFavorites}
@@ -35,17 +35,15 @@ function Home({ cards,
 			 else if(searchValue === "") {
 				return <Card 
 				{...card}
-				index={index}
+				key={index}
 				onPlus={(card) => addToCart(card)}
 				onClickMinus={(id) => onClickMinus(id)}
 				onFavorite={(card) => addToFavorites(card)}
 				removeFromFavorites={removeFromFavorites}
 				favorited={isFavorited(card.id)}
 				loading={isLoading} />
-			}
-			
+			}			
 		}))
-
 	}
 
 	return (<div className="content p-5">	

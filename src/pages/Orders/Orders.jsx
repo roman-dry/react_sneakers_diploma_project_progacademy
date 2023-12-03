@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
 import axios from "axios";
 
 import styles from './Orders.module.scss';
 
-function Orders({ user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, setTotalSumDescription, url }) {
+function Orders({ currentUser, setTotalSumOfOrders, orders, setOrders, setTotalSumDescription, url }) {
 	
 	const navigate = useNavigate();
+	const token = useSelector((state) => state.tokenReducer.item.access_token);
 	const totalSumOfOrders = orders.reduce((acc, order) => {
 		return acc + Number(order.totalSum)
 	}, 0);
@@ -15,27 +17,35 @@ function Orders({ user, isLoginTrue, setTotalSumOfOrders, orders, setOrders, set
 		return acc + order.orderDescription + "  "
 	}, "");
 	setTotalSumDescription(totalSumDescription);	
-	
-	async function getOrders() {
-		if(isLoginTrue) {
-			try {
-				const { data } = await axios.get(`${url}orders/${user.id}`);
-				setOrders(data);
-			} catch (error) {
-				alert('Failed to request the orders');	
-			}				
-		} else {
-			return navigate('/login')
+
+	useEffect(() => {
+		async function getOrders() {
+			if(currentUser.name) {
+				try {
+					const { data } = await axios.get(`${url}orders/${currentUser.id}`, {
+						headers: { Authorization: `Bearer ${token}` },
+					  });
+					setOrders(data);
+				} catch (error) {
+					alert('Failed to request the orders');	
+				}				
+			} else {
+				return navigate('/login')
+			};
 		};
-	};
-	getOrders();
-	
+		getOrders();
+
+	}, [])	
 
 	async function onRemoveOrder(id) {
 		
 		try {
-			await axios.delete(`${url}orders/${id}`);
-			setOrders((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
+			await axios.delete(`${url}orders/${id}`,
+			{headers: {
+				 Authorization: `Bearer ${token}`
+			 }          
+			});
+			setOrders((prev) => prev.filter((item) => item.id !== id));
 
 		} catch (error) {
 			alert('Failed to remove from Orders!')

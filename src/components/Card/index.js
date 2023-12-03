@@ -7,7 +7,7 @@ import'./card.scss';
 function Card( {id, parent_id, title, price, imageURL, count, totalPrice, onPlus, onFavorite, removeFromFavorites,
 	favorited = false, loading = false} ) {
 
-	const { isCardAdded, favorites } = useContext(AppContext);
+	const { isCardAdded, favorites, isFavorited } = useContext(AppContext);
 	const [buttonColorHeart, setButtonColorHeart] = useState(favorited);
 	const [buttonHeartLiked, setButtonHeartLiked] = useState(favorited);
 	
@@ -19,7 +19,7 @@ function Card( {id, parent_id, title, price, imageURL, count, totalPrice, onPlus
 
 	function onClickFavorite(id) {
 		
-		const findFavoriteCard = favorites.find((item) => Number(item.parent_id) === Number(id));
+		const findFavoriteCard = favorites.find((item) => item.parent_id === id);
 
 		if(findFavoriteCard) {
 			setButtonColorHeart(false);
@@ -49,10 +49,10 @@ function Card( {id, parent_id, title, price, imageURL, count, totalPrice, onPlus
 						<rect x="187" y="163" rx="5" ry="5" width="32" height="27" /> 
 						<rect x="184" y="3" rx="5" ry="5" width="32" height="32" /> 
 						<rect x="-4" y="-3" rx="10" ry="10" width="182" height="135" />
-				</ContentLoader>) : (<div>{onFavorite && <button className={buttonColorHeart ? "button-heart-liked" : "button-heart-unliked"} 
+				</ContentLoader>) : (<div>{onFavorite && <button className={buttonColorHeart || isFavorited(parent_id) ? "button-heart-liked" : "button-heart-unliked"} 
 				onClick={() => onClickFavorite(card.id)}>
 					<img width="15px" 
-						src={buttonHeartLiked ? "img/heart-liked.svg" : "img/heart-unliked.svg"} 
+						src={buttonHeartLiked || isFavorited(parent_id) ? "img/heart-liked.svg" : "img/heart-unliked.svg"} 
 						alt="Heart-liked" />
 			</button>}
 			<img width="100%" src={imageURL} alt="Sneakers 1" />

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useForm } from 'react-hook-form';
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from 'axios';
 
 import styles from './Orders/Orders.module.scss';
 
-function AdminEdit({ url, user }) {
+function AdminEdit({ url, currentUser }) {
     const navigate = useNavigate();
+    const token = useSelector((state) => state.tokenReducer.item.access_token);
     const { register: registerFirstField, handleSubmit: handleSubmitFirstForm} = useForm();
     const { register: registerSecondField, handleSubmit: handleSubmitSecondForm} = useForm();
     const [cardId, setCardId] = useState(0);
@@ -18,14 +20,17 @@ function AdminEdit({ url, user }) {
 
     async function getItemById(id) {
         try {
-            const { data } = await axios.get(`${url}${id}`);
+            const { data } = await axios.get(`${url}${id}`,
+            {headers: {
+                 Authorization: `Bearer ${token}`
+             }          
+            });
             setInputValueTitle(data.title);
             setInputValuePrice(data.price);
             setInputValueImageUrl(data.imageURL);
         } catch {
             alert('Error get item by ID')
-        }
-        
+        }        
     }
 
     function getId(obj) {
@@ -57,9 +62,13 @@ function AdminEdit({ url, user }) {
             "parent_id": cardId
 
         }	
-        if(user.role === "ADMIN") {
+        if(currentUser.role === "ADMIN") {
             try {
-                await axios.patch(`${url}?id=${objEdit.id}&title=${objEdit.title}&price=${objEdit.price}&imageURL=${objEdit.imageURL}&count=${objEdit.count}&totalPrice=${objEdit.totalPrice}&parent_id=${objEdit.parent_id}`);
+                await axios.patch(`${url}?id=${objEdit.id}&title=${objEdit.title}&price=${objEdit.price}&imageURL=${objEdit.imageURL}&count=${objEdit.count}&totalPrice=${objEdit.totalPrice}&parent_id=${objEdit.parent_id}`,
+                {headers: {
+                     Authorization: `Bearer ${token}`
+                 }          
+                });
                 setIsEdited(true);
                 setCardId(objEdit.id);
             } catch (error) {

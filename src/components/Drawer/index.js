@@ -1,17 +1,19 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
 import axios from 'axios';
 import Info from '../Info';
 import { AppContext } from '../../App';
 
 import styles from './Drawer.module.scss';
 
-function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
+function Drawer({ onClickCloseCart, onClickMinus, opened, currentUser, url }) {
 
 	const [isOrderCompleted, setIsOrderCompleted] = useState(false);
 	const [orderId, setOrderId] = useState(null);
 	const { cardCart, setCardCart } = useContext(AppContext);
 	const navigate = useNavigate();
+	const token = useSelector((state) => state.tokenReducer.item.access_token);
 	const sumOfOrders = cardCart.reduce((acc, card) => {
 		return acc + Number(card.totalPrice)
 	}, 0);		
@@ -28,19 +30,28 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 				
 				}, "")
 			const newOrder = {
-				"user_id": user.id,
+				"user_id": currentUser.id,
 				"status": "inactive",
 				"orderDescription": orderDescription,
 				"totalSum": sumOfOrders >= 1000 ? sumOfOrders : sumOfOrders * 1.05
 			};
 
 			async function removeUsersCart() {
-				await axios.delete(`${url}cart?user_id=${user.id}`);
+				await axios.delete(`${url}cart?user_id=${currentUser.id}`,
+                {headers: {
+                     Authorization: `Bearer ${token}`
+                 }          
+                });
 			}
 
 			try {
 			
-				const { data } = await axios.post(`${url}orders`, newOrder);
+				const { data } = await axios.post(`${url}orders`, JSON.stringify(newOrder),
+                {headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json'
+                 }          
+                });
 				setOrderId(data.id)
 				setIsOrderCompleted(true);
 				setCardCart([]);
@@ -57,10 +68,10 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 		try {
 		
 			[...cardCart].map((item) => {
-				if (Number(item.parent_id) === Number(card.parent_id)) {
+				if (item.parent_id === card.parent_id) {
 					
 					++item.count;
-					item.totalPrice = item.totalPrice + Number(item.price);				
+					item.totalPrice = item.totalPrice + item.price;				
 								
 					return item;
 				}			
@@ -73,10 +84,15 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 				"count": card.count,
 				"totalPrice": card.totalPrice,
 				"parent_id": card.parent_id,
-				"user_id": user.id
+				"user_id": currentUser.id
 			}
 
-			const { data } = await axios.put(`${url}cart`, cart);
+			const { data } = await axios.put(`${url}cart`, JSON.stringify(cart),
+			{headers: {
+				 Authorization: `Bearer ${token}`,
+				 'Content-Type': 'application/json'
+			 }          
+			});
 			setCardCart((prev) => prev.map(item => {
 				if(item.id === data.id) {
 					return {
@@ -101,10 +117,10 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 			try {
 			
 				[...cardCart].map((item) => {
-					if (Number(item.parent_id) === Number(card.parent_id)) {
+					if (item.parent_id === card.parent_id) {
 						
 						--item.count;
-						item.totalPrice = item.totalPrice - Number(item.price);				
+						item.totalPrice = item.totalPrice - item.price;				
 									
 						return item;
 					}			
@@ -117,10 +133,15 @@ function Drawer({ onClickCloseCart, onClickMinus, opened, user, url }) {
 					"count": card.count,
 					"totalPrice": card.totalPrice,
 					"parent_id": card.parent_id,
-					"user_id": user.id
+					"user_id": currentUser.id
 				}
 	
-				const { data } = await axios.put(`${url}cart`, cart);
+				const { data } = await axios.put(`${url}cart`, JSON.stringify(cart),
+                {headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json'
+                 }          
+                });
 				setCardCart((prev) => prev.map(item => {
 					if(item.id === data.id) {
 						return {

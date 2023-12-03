@@ -1,19 +1,40 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch} from "react-redux";
+import { removeUser } from "../redux/slices/userSlice";
+import { removeToken } from "../redux/slices/tokenSlice";
 import { AppContext } from '../App';
+import axios from 'axios';
 
-function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, user, setUser, setCardCart} ) {
+function Header( {onClickCart, setCardCart, currentUser, url} ) {
 
-	const { cardCart } = useContext(AppContext);
+	const { cardCart, setFavorites } = useContext(AppContext);
 	const navigate = useNavigate();
+    const token = useSelector((state) => state.tokenReducer.item.access_token);
+    const dispatch = useDispatch();
     const sumOfOrders = cardCart.reduce((acc, card) => {
 		return acc + Number(card.totalPrice)}, 0);
 	const visiblePromotionSum = sumOfOrders >= 1000 ? sumOfOrders.toFixed(2) : (sumOfOrders * 1.05).toFixed(2);
 
-	function getLogout() {
-		setIsLoginTrue(false)
-		setUser({});
-		setCardCart([])
+	
+	async function getLogout() {
+		try { 
+			
+            await axios.post(`${url}api/auth/logout`,  JSON.stringify({}),
+                {headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json'
+                 }          
+                });
+            dispatch(removeUser()); 
+            dispatch(removeToken());
+			setCardCart([]);
+			setFavorites([]);
+			return navigate('/');			
+
+        } catch {
+            alert('Fail logout');
+        }	
 
 	}
 
@@ -34,9 +55,9 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, user, 
 			</Link>
 
 			{
-				isLoginTrue ? <div className='grettings'><h6 className='pb-0 ml-3 text-center'>Hello, {userViewName}!</h6>
+				currentUser.name ? <div className='grettings'><h6 className='pb-0 ml-3 text-center'>Hello, {currentUser.name}!</h6>
 				<div className='text-center'>
-					<button className='ml-3 btn' onClick={getLogout}><span className='logoutBtn'><b>Logout</b></span></button></div>
+					<button className='ml-3 btn' onClick={() => getLogout()}><span className='logoutBtn'><b>Logout</b></span></button></div>
 				</div> : 
 					<div className='link-login text-center'><Link to="/login">Login</Link></div>
 			}			
@@ -54,13 +75,16 @@ function Header( {onClickCart, userViewName, isLoginTrue, setIsLoginTrue, user, 
 						<img width="20px" src="img/heart-unliked.svg" alt="Favorite button" />
 					</button>
 				</Link>
-				
-				<select className="text-center selectBlock ml-3" onClick={onRedirectToOrdersPage}>
+
+				{
+					currentUser.name ? <select className="text-center selectBlock ml-3" onClick={onRedirectToOrdersPage}>
 					<option value="/">Info</option>
-					<option value="/orders">My orders</option>
-					<option value="/shipping">My shipping</option>
-					{user.role === 'ADMIN' ? <option value="/admin">Add product</option> : <option value="/user">Edit profile</option> }
-				</select>
+					{currentUser.role === 'USER' ? <option value="/orders">My orders</option> : ''}
+					{currentUser.role === 'USER' ? <option value="/shipping">My shipping</option> : ''}
+					{currentUser.role === 'ADMIN' ? <option value="/admin">Add product</option> : <option value="/user">Edit profile</option>}
+				</select> : ''
+
+				}				
 
 			</ul>	
 						

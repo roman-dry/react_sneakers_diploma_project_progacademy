@@ -1,21 +1,27 @@
 import React, { useState } from "react";
 import { useForm } from 'react-hook-form';
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from 'axios';
 
 import styles from './Orders/Orders.module.scss';
 
-function AdminDelete({ url, user }) {
+function AdminDelete({ url, currentUser }) {
     const { register, handleSubmit} = useForm();
     const [cardId, setCardId] = useState(0);
     const [isRemoved, setIsRemoved] = useState(false);
     const [isAdmin, setIsAdmin] = useState(true);
     const navigate = useNavigate();
+    const token = useSelector((state) => state.tokenReducer.item.access_token);
 
     async function onSubmitDelete(obj) {
-        if(user.role === "ADMIN") {
+        if(currentUser.role === "ADMIN") {
             try {            
-                await axios.delete(`${url}${obj.id}`);
+                await axios.delete(`${url}${obj.id}`,
+                {headers: {
+                     Authorization: `Bearer ${token}`
+                 }          
+                });
                 setIsRemoved(true);
                 setCardId(obj.id);
             } catch (error) {
