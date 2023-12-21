@@ -67,7 +67,7 @@ function Orders({ currentUser, setTotalSumOfOrders, orders, setOrders, setTotalS
 						{
 							listOfOrdersDescription.map(item => {
 								return <ul>
-									<li style={{listStyleType:'none'}}>{item}</li>
+									<li key={item.id} style={{listStyleType:'none'}}>{item}</li>
 								</ul>
 							})
 						}

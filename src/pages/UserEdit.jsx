@@ -13,16 +13,11 @@ function UserEdit({ url, currentUser }) {
     const [isUser, setIsUser] = useState(false);
     const [isEdited, setIsEdited] = useState(false);
     const [inputValueName, setInputValueName] = useState(currentUser.name);
-    const [inputValueEmail, setInputValueEmail] = useState(currentUser.email);
     const [inputValuePassword, setInputValuePassword] = useState('');
 
 
     function handleChangeName(e) {
         setInputValueName(e.target.value);
-    }
-
-    function handleChangeEmail(e) {
-        setInputValueEmail(e.target.value);
     }
 
     function handleChangePassword(e) {
@@ -31,13 +26,12 @@ function UserEdit({ url, currentUser }) {
 
     async function onSubmitEdit(obj) {
         let name = obj.name;
-        let email = obj.email;
         let phone = obj.phone;
         let password = obj.password;
         
         if(currentUser.name) {
             try {
-                await axios.patch(`${url}user/edit?id=${currentUser.id}&name=${name}&email=${email}&phone=${phone}&password=${password}`, JSON.stringify({}),
+                await axios.patch(`${url}user/edit?id=${currentUser.id}&name=${name}&phone=${phone}&password=${password}`, JSON.stringify({}),
                 {headers: {
                      Authorization: `Bearer ${token}`,
                      'Content-Type': 'application/json'
@@ -62,13 +56,6 @@ function UserEdit({ url, currentUser }) {
                 
 				<label>Edit name<br /><input className={styles.formWidthEdit} {...register('name', { required: true, pattern: /^[A-Za-z]+$/i })} 
                     name="name" value={inputValueName} onChange={handleChangeName} /></label><br />				
-				<label>Edit email<br /><input className={styles.formWidthEdit} {...register('email', { required: true, pattern: {
-						value: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-					} })} 
-                    name="email" value={inputValueEmail} onChange={handleChangeEmail} /></label><br />
-                    {errors["email"] && (
-						<p className={stylesReg.colorError} >Invalid email address!</p>
-				)}
                 <label>Edit phone<br /><div className={stylesReg.phoneController}>
 					<Controller
 					name="phone"
