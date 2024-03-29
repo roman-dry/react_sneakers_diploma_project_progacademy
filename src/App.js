@@ -35,8 +35,8 @@ function App() {
 	const exp = getLocalStorage("token").exp;
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
-	//const url = 'https://diploma-project-w89i.onrender.com/';
-	const url = 'http://localhost:8080/';
+	const url = 'https://diploma-project-w89i.onrender.com/';
+	//const url = 'http://localhost:8080/';
 	
 
 	useEffect(() => {
