@@ -13,7 +13,10 @@ import Admin from "./pages/Admin";
 import AdminEdit from "./pages/AdminEdit";
 import AdminDelete from "./pages/AdminDelete";
 import UserEdit from "./pages/UserEdit";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { removeUser } from "./redux/slices/userSlice";
+import { removeToken } from "./redux/slices/tokenSlice";
+import { getLocalStorage } from "./utils/localStorage.js";
 export const AppContext = createContext({});
 
 function App() {
@@ -29,20 +32,32 @@ function App() {
 	const [orders, setOrders] = useState([]);
 	const currentUser = useSelector((state) => state.userReducer.user);
 	const token = useSelector((state) => state.tokenReducer.item.access_token);
+	const exp = getLocalStorage("token").exp;
 	const navigate = useNavigate();
-	const url = 'https://diploma-project-w89i.onrender.com/';
-	//const url = 'http://localhost:8080/';
+	const dispatch = useDispatch();
+	//const url = 'https://diploma-project-w89i.onrender.com/';
+	const url = 'http://localhost:8080/';
+	
 
 	useEffect(() => {
 		
-		async function fetchData() {			
-
+		async function fetchData() {
 			try {
-
 				setIsLoading(true)
 				const cardsResponse = await axios.get(url);
 				setIsLoading(false);
 				setCards(cardsResponse.data);
+				
+				let time = new Date().getTime();
+				time = time / 1000;
+				if (exp && exp < time) {
+					localStorage.removeItem("user");
+					dispatch(removeUser()); 
+					dispatch(removeToken());
+					setCardCart([]);
+					setFavorites([]);
+					return navigate('/');
+				}
 				if (currentUser.role === 'USER') {
 					const cartResponse = await axios.get(`${url}cart?user_id=${currentUser.id}`, {
 						headers: { Authorization: `Bearer ${token}` },

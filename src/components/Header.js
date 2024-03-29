@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch} from "react-redux";
 import { removeUser } from "../redux/slices/userSlice";
 import { removeToken } from "../redux/slices/tokenSlice";
+import { getLocalStorage } from '../utils/localStorage';
 import { AppContext } from '../App';
 import axios from 'axios';
 
@@ -11,6 +12,7 @@ function Header( {onClickCart, setCardCart, currentUser, url} ) {
 	const { cardCart, setFavorites } = useContext(AppContext);
 	const navigate = useNavigate();
     const token = useSelector((state) => state.tokenReducer.item.access_token);
+	const exp = getLocalStorage("token").exp;
     const dispatch = useDispatch();
     const sumOfOrders = cardCart.reduce((acc, card) => {
 		return acc + Number(card.totalPrice)}, 0);
@@ -18,23 +20,38 @@ function Header( {onClickCart, setCardCart, currentUser, url} ) {
 
 	
 	async function getLogout() {
-		try { 
-			
-            await axios.post(`${url}api/auth/logout`,  JSON.stringify({}),
-                {headers: {
-                     Authorization: `Bearer ${token}`,
-                     'Content-Type': 'application/json'
-                 }          
-                });
-            dispatch(removeUser()); 
-            dispatch(removeToken());
+		let time = new Date().getTime();
+		time = time / 1000;
+		if (exp && exp < time) {
+			localStorage.removeItem("user");
+			dispatch(removeUser()); 
+			dispatch(removeToken());
 			setCardCart([]);
 			setFavorites([]);
-			return navigate('/');			
+			return navigate('/');
+		} else {
+			try { 
+		
+				await axios.post(`${url}api/auth/logout`,  JSON.stringify({}),
+					{headers: {
+							Authorization: `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}          
+					});
+				dispatch(removeUser()); 
+				dispatch(removeToken());
+				setCardCart([]);
+				setFavorites([]);
+				return navigate('/');			
+	
+			} catch {
+				alert('Fail logout');
+			}	
 
-        } catch {
-            alert('Fail logout');
-        }	
+		}
+		
+		
+		
 
 	}
 
