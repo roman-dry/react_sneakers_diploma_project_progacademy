@@ -23,12 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v3
         with:
           node-version: v22.x
 
@@ -42,7 +42,7 @@ jobs:
 
 # Please do not touch the following action
       - name: Store deployment content
-        uses: ionos-deploy-now/artifact-action@latest
+        uses: ionos-deploy-now/artifact-action@v1
         with:
           api-key: ${{ secrets.IONOS_API_KEY }}
           service-host: api-us.ionos.space
