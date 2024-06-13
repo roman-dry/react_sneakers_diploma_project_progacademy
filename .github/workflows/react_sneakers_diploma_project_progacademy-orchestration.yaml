@@ -3,53 +3,51 @@
 # More information under https://docs.ionos.space/docs/github-actions-customization/
 # version: 2022-07-21
 
-name: "Deploy Now: Orchestration"
-run-name: "Deploy Now: Build react_sneakers_diploma_project_progacademy · ${{ github.event.head_commit.message || format('Triggered by {0}', github.triggering_actor) }}"
+name: "Deploy Now: Execute Build"
 
 on:
-  - push
-  - workflow_dispatch
+  workflow_call:
+    inputs:
+      site-url:
+        required: true
+        type: string
+      branch-id:
+        required: true
+        type: string
+
+env:
+  DEPLOYMENT_FOLDER: public
 
 jobs:
-  retrieve-project:
-    name: check readiness
+  build-project:
+    name: build react_sneakers_diploma_project_progacademy
     runs-on: ubuntu-latest
-    outputs:
-      deployment-enabled: ${{ fromJson(steps.project.outputs.info).deployment-enabled }}
-      branch-id: ${{ fromJson(steps.project.outputs.info).branch-id }}
     steps:
-      - name: Fetch project data
-        uses: ionos-deploy-now/project-action@v1
-        id: project
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4  # Використання новішої версії Node.js
+        with:
+          node-version: '20'
+
+      - name: Build Node assets
+        env:
+          CI: true
+          SITE_URL: ${{ inputs.site-url }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Store deployment content
+        uses: ionos-deploy-now/artifact-action@v1
         with:
           api-key: ${{ secrets.IONOS_API_KEY }}
           service-host: api-us.ionos.space
           project-id: 9a9f6176-1e5e-4f1d-bfdf-cfac37795187
-          action: retrieve-info
+          branch-id: ${{ inputs.branch-id }}
+          version: ${{ github.sha }}
+          folder: ${{ env.DEPLOYMENT_FOLDER }}
+          config-file: .deploy-now/react_sneakers_diploma_project_progacademy/config.yaml
+          action: upload
 
-
-  build:
-    name: build
-    needs: retrieve-project
-    if: ${{ needs.retrieve-project.outputs.deployment-enabled == 'true' }}
-    uses: ./.github/workflows/react_sneakers_diploma_project_progacademy-build.yaml
-    with:
-      site-url: https://IONOS_DEPLOY_NOW_SITE_URL
-      branch-id: ${{ needs.retrieve-project.outputs.branch-id }}
-    secrets: inherit
-
-  deploy:
-    name: trigger deployment
-    needs:
-      - retrieve-project
-      - build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dispatch deployment(s)
-        uses: ionos-deploy-now/project-action@v1
-        with:
-          api-key: ${{ secrets.IONOS_API_KEY }}
-          service-host: api-us.ionos.space
-          project-id: 9a9f6176-1e5e-4f1d-bfdf-cfac37795187
-          branch-id: ${{ needs.retrieve-project.outputs.branch-id }}
-          action: dispatch-deployments
