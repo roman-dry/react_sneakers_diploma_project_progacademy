@@ -17,6 +17,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { removeUser } from "./redux/slices/userSlice";
 import { removeToken } from "./redux/slices/tokenSlice";
 import { getLocalStorage } from "./utils/localStorage.js";
+
 export const AppContext = createContext({});
 
 function App() {
@@ -35,8 +36,26 @@ function App() {
 	const exp = getLocalStorage("token").exp;
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
+	const first_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/1.png`;
+	const second_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/2.png`;
+	const third_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/3.png`;
+	const fourths_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/4.png`;
+	const fifth_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/5.png`;
+	const sixth_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/6.png`;
+	const seventh_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/7.png`;
+	const eighth_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/8.png`;
+	const ninth_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/9.png`;
+	const tenth_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/10.png`;
+	const eleventh_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/11.png`;
+	const twelfth_sneakers = `${process.env.PUBLIC_URL}/img/sneakers/12.png`;
+	const sneakers = [
+		fifth_sneakers, second_sneakers, third_sneakers, fourths_sneakers, fifth_sneakers, sixth_sneakers, seventh_sneakers,
+		eighth_sneakers, ninth_sneakers, tenth_sneakers, eleventh_sneakers, twelfth_sneakers
+	]
+
 	const url = 'https://diploma-project-w89i.onrender.com/';
-	//const url = 'http://localhost:8080/';
+	// const url = 'http://localhost:8080/';
+	//const url = 'https://luchoicesneakers.online/';
 	
 
 	useEffect(() => {
@@ -44,9 +63,14 @@ function App() {
 		async function fetchData() {
 			try {
 				setIsLoading(true)
-				const cardsResponse = await axios.get(url);
+				const { data } = await axios.get(url);
 				setIsLoading(false);
-				setCards(cardsResponse.data);
+				data.map((card, index) => {
+					card.imageURL = sneakers[index];
+
+					return card;
+				})
+				setCards(data);
 				
 				let time = new Date().getTime();
 				time = time / 1000;
