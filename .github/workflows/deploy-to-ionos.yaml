@@ -35,6 +35,11 @@ jobs:
       matrix:
         deployment-id: ${{ fromJson(inputs.deployment-ids) }}
     steps:
+      - name: Setup Node (Override for Deploy Action)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
       - name: Update deployment status
         uses: ionos-deploy-now/project-action@v1
         with:
