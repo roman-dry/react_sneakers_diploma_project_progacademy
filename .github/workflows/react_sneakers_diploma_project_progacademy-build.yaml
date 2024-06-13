@@ -27,7 +27,7 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Setup Node
+      - name: Setup Node (Override for Deploy Action)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
