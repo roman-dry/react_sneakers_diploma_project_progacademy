@@ -27,10 +27,10 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup Node ("latest" Version)
+        uses: actions/setup-node@v4
         with:
-          node-version: v22.x
+          node-version: latest
           
       - name: Build Node assets
         env:
