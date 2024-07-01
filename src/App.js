@@ -54,7 +54,7 @@ function App() {
 	]
 
 	const url = 'https://diploma-project-w89i.onrender.com/';
-	// const url = 'http://localhost:8080/';
+	//const url = 'http://localhost:8080/';
 	//const url = 'https://luchoicesneakers.online/';
 	
 
