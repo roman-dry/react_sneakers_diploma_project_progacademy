@@ -107,7 +107,7 @@ function Registration({ url }) {
 			</form>
 			<div className="mt-2">
 				<ReCAPTCHA
-					sitekey="6LfC0CMqAAAAAH1Gmw8wOgP6WGpaTnlmB7idNYGk"
+					sitekey="6Lfm6SMqAAAAAEzS4d3i6RtK5cNHpyaaTRQazdKP"
 					onChange={handleRecaptchaChange}
 					theme="light"
 				/>
