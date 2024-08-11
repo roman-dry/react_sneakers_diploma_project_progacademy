@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { jwtDecode } from "jwt-decode";
 import { setTokenItem } from '../redux/slices/tokenSlice';
 import { setUser } from "../redux/slices/userSlice";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 import 'react-phone-number-input/style.css';
 import stylesReg from './Registration.module.scss';
@@ -20,8 +21,16 @@ function Registration({ url }) {
 							mode: "onBlur"
 						});
 	const [isFreeLogin, setisFreelogin] = useState("");
+	const [recaptchaToken, setRecaptchaToken] = useState(null);
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+
+	console.log(recaptchaToken);
+
+    const handleRecaptchaChange = (token) => {
+        setRecaptchaToken(token);
+      };
+
 
 	async function onSubmit(user) {
 		try {
@@ -96,6 +105,14 @@ function Registration({ url }) {
 				)}
 				<button type="submit" className={styles.submitBtn}>Submit</button> 
 			</form>
+			<div className="mt-2">
+				<ReCAPTCHA
+					sitekey={process.env.REACT_APP_SITE_KEY}
+					onChange={handleRecaptchaChange}
+					theme="light"
+				/>
+
+            </div>
 		</div>
 	)
 }
